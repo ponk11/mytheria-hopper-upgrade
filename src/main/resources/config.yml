@@ -1,0 +1,62 @@
+settings:
+  task-interval: 20
+  max-speed-level: 10
+  max-range-level: 10
+
+gui:
+  title: "&d✦ Mytheria Hoppers ✦"
+
+economy:
+  provider: AUTO
+
+coinsengine:
+  currency-id: coins
+
+speed-upgrades:
+  1:
+    transfer-ticks: 8
+    cost: 1000
+
+  2:
+    transfer-ticks: 6
+    cost: 2500
+
+  3:
+    transfer-ticks: 4
+    cost: 5000
+
+  4:
+    transfer-ticks: 2
+    cost: 10000
+
+
+range-upgrades:
+  1:
+    range: 2
+    cost: 1000
+
+  2:
+    range: 4
+    cost: 2500
+
+  3:
+    range: 6
+    cost: 5000
+
+  4:
+    range: 8
+    cost: 10000
+
+
+messages:
+  prefix: "&d&lMytheria &5&lHoppers &8»"
+
+  no-permission: "&cYou do not have permission."
+
+  upgraded: "&aUpgrade purchased!"
+
+  max-level: "&cThis upgrade is already maxed!"
+
+  not-enough-money: "&cYou do not have enough money."
+
+  reloaded: "&aConfiguration reloaded."
