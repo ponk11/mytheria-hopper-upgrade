@@ -28,14 +28,16 @@ public class HopperGUI {
 
     public void open(Player player) {
 
-        Inventory inv = Bukkit.createInventory(
-                null,
-                27,
-                color(plugin.getConfig()
-                        .getString(
-                                "gui.title"
-                        ))
-        );
+
+        Inventory inv =
+                Bukkit.createInventory(
+                        new HopperHolder(location),
+                        27,
+                        color(plugin.getConfig()
+                                .getString(
+                                        "gui.title"
+                                ))
+                );
 
 
         HopperData data =
@@ -46,7 +48,7 @@ public class HopperGUI {
 
         inv.setItem(
                 11,
-                item(
+                create(
                         Material.NETHER_STAR,
                         "&dSpeed Upgrade",
                         List.of(
@@ -58,9 +60,10 @@ public class HopperGUI {
         );
 
 
+
         inv.setItem(
                 15,
-                item(
+                create(
                         Material.ENDER_EYE,
                         "&dRange Upgrade",
                         List.of(
@@ -78,7 +81,7 @@ public class HopperGUI {
 
 
 
-    private ItemStack item(
+    private ItemStack create(
             Material material,
             String name,
             List<String> lore
