@@ -1,26 +1,49 @@
 package me.mytheria.hoppers;
 
 import me.mytheria.hoppers.commands.HopperCommand;
+import me.mytheria.hoppers.economy.EconomyManager;
 import me.mytheria.hoppers.hopper.HopperManager;
 import me.mytheria.hoppers.hopper.HopperTask;
 import me.mytheria.hoppers.listeners.GUIListener;
 import me.mytheria.hoppers.listeners.HopperInteractListener;
+import me.mytheria.hoppers.storage.DataManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MytheriaHoppers extends JavaPlugin {
+
 
     private static MytheriaHoppers instance;
 
     private HopperManager hopperManager;
 
+    private EconomyManager economyManager;
+
+    private DataManager dataManager;
+
+
+
     @Override
     public void onEnable() {
 
+
         instance = this;
+
 
         saveDefaultConfig();
 
-        hopperManager = new HopperManager(this);
+
+        dataManager =
+                new DataManager(this);
+
+
+        hopperManager =
+                new HopperManager(this);
+
+
+        economyManager =
+                new EconomyManager(this);
+
+
 
         getServer()
                 .getPluginManager()
@@ -28,6 +51,7 @@ public class MytheriaHoppers extends JavaPlugin {
                         new HopperInteractListener(this),
                         this
                 );
+
 
         getServer()
                 .getPluginManager()
@@ -38,37 +62,66 @@ public class MytheriaHoppers extends JavaPlugin {
 
 
         getCommand("mytheriahoppers")
-                .setExecutor(new HopperCommand(this));
+                .setExecutor(
+                        new HopperCommand(this)
+                );
 
-
-        int interval = getConfig()
-                .getInt("settings.task-interval", 20);
 
 
         new HopperTask(this)
                 .runTaskTimer(
                         this,
-                        interval,
-                        interval
+                        20,
+                        getConfig()
+                                .getInt(
+                                "settings.task-interval",
+                                20)
                 );
 
 
-        getLogger().info("MytheriaHoppers enabled!");
+        getLogger()
+                .info(
+                "MytheriaHoppers enabled."
+                );
+
     }
+
 
 
     @Override
     public void onDisable() {
-        getLogger().info("MytheriaHoppers disabled!");
+
+        dataManager.save();
+
     }
 
 
+
     public static MytheriaHoppers getInstance() {
+
         return instance;
+
     }
 
 
     public HopperManager getHopperManager() {
+
         return hopperManager;
+
     }
+
+
+    public EconomyManager getEconomyManager() {
+
+        return economyManager;
+
+    }
+
+
+    public DataManager getDataManager() {
+
+        return dataManager;
+
+    }
+
 }
