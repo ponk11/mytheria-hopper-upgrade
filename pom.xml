@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.mytheria</groupId>
-    <artifactId>MytheriaHoppers</artifactId>
+    <artifactId>mytheria-hopper-upgrade</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
