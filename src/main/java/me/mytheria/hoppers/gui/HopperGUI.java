@@ -11,7 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class HopperGUI {
 
@@ -21,96 +21,106 @@ public class HopperGUI {
 
 
     public HopperGUI(MytheriaHoppers plugin, Location location) {
-
         this.plugin = plugin;
         this.location = location;
-
     }
 
 
     public void open(Player player) {
 
-
-        Inventory inventory = Bukkit.createInventory(
+        Inventory inv = Bukkit.createInventory(
                 null,
                 27,
-                ChatColor.translateAlternateColorCodes(
-                        '&',
-                        plugin.getConfig()
-                                .getString(
-                                        "gui.title"
-                                )
-                )
+                color(plugin.getConfig()
+                        .getString(
+                                "gui.title"
+                        ))
         );
 
 
-        HopperData data = plugin
-                .getHopperManager()
-                .getData(location);
+        HopperData data =
+                plugin.getHopperManager()
+                        .getData(location);
 
 
 
-        inventory.setItem(
+        inv.setItem(
                 11,
-                createItem(
+                item(
                         Material.NETHER_STAR,
                         "&dSpeed Upgrade",
-                        "&7Level: &f" + data.getSpeedLevel(),
-                        "&7Click to upgrade"
+                        List.of(
+                                "&7Level: &f" + data.getSpeedLevel(),
+                                "&7",
+                                "&aClick to upgrade"
+                        )
                 )
         );
 
 
-        inventory.setItem(
+        inv.setItem(
                 15,
-                createItem(
+                item(
                         Material.ENDER_EYE,
                         "&dRange Upgrade",
-                        "&7Level: &f" + data.getRangeLevel(),
-                        "&7Click to upgrade"
+                        List.of(
+                                "&7Level: &f" + data.getRangeLevel(),
+                                "&7",
+                                "&aClick to upgrade"
+                        )
                 )
         );
 
 
-        player.openInventory(inventory);
+        player.openInventory(inv);
 
     }
 
 
 
-    private ItemStack createItem(Material material, String... lore) {
+    private ItemStack item(
+            Material material,
+            String name,
+            List<String> lore
+    ) {
 
-        ItemStack item = new ItemStack(material);
 
-        ItemMeta meta = item.getItemMeta();
+        ItemStack item =
+                new ItemStack(material);
+
+
+        ItemMeta meta =
+                item.getItemMeta();
+
 
         meta.setDisplayName(
-                ChatColor.translateAlternateColorCodes(
-                        '&',
-                        lore[0]
-                )
+                color(name)
         );
 
 
-        ArrayList<String> lines = new ArrayList<>();
+        meta.setLore(
+                lore.stream()
+                        .map(this::color)
+                        .toList()
+        );
 
-        for (int i = 1; i < lore.length; i++) {
-
-            lines.add(
-                    ChatColor.translateAlternateColorCodes(
-                            '&',
-                            lore[i]
-                    )
-            );
-
-        }
-
-
-        meta.setLore(lines);
 
         item.setItemMeta(meta);
 
 
         return item;
+
     }
+
+
+
+    private String color(String text) {
+
+        return ChatColor.translateAlternateColorCodes(
+                '&',
+                text
+        );
+
+    }
+
 }
