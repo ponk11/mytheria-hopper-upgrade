@@ -12,7 +12,9 @@ economy:
 coinsengine:
   currency-id: coins
 
+
 speed-upgrades:
+
   1:
     transfer-ticks: 8
     cost: 1000
@@ -30,7 +32,9 @@ speed-upgrades:
     cost: 10000
 
 
+
 range-upgrades:
+
   1:
     range: 2
     cost: 1000
@@ -48,7 +52,9 @@ range-upgrades:
     cost: 10000
 
 
+
 messages:
+
   prefix: "&d&lMytheria &5&lHoppers &8»"
 
   no-permission: "&cYou do not have permission."
