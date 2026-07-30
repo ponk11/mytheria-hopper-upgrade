@@ -2,13 +2,15 @@ package me.mytheria.hoppers;
 
 import me.mytheria.hoppers.commands.HopperCommand;
 import me.mytheria.hoppers.economy.EconomyManager;
+import me.mytheria.hoppers.gui.UpgradeManager;
 import me.mytheria.hoppers.hopper.HopperManager;
 import me.mytheria.hoppers.hopper.HopperTask;
 import me.mytheria.hoppers.listeners.GUIListener;
+import me.mytheria.hoppers.listeners.HopperBreakListener;
 import me.mytheria.hoppers.listeners.HopperInteractListener;
+import me.mytheria.hoppers.listeners.HopperPlaceListener;
 import me.mytheria.hoppers.storage.DataManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import me.mytheria.hoppers.gui.UpgradeManager;
 
 public class MytheriaHoppers extends JavaPlugin {
 
@@ -19,9 +21,9 @@ public class MytheriaHoppers extends JavaPlugin {
 
     private EconomyManager economyManager;
 
-    private DataManager dataManager;
-
     private UpgradeManager upgradeManager;
+
+    private DataManager dataManager;
 
 
 
@@ -35,21 +37,24 @@ public class MytheriaHoppers extends JavaPlugin {
         saveDefaultConfig();
 
 
-        dataManager =
-                new DataManager(this);
-        
+
+        dataManager = new DataManager(this);
+
+
+
+        hopperManager = new HopperManager(this);
+
+
+
         dataManager.load();
 
 
-        hopperManager =
-                new HopperManager(this);
+
+        economyManager = new EconomyManager(this);
 
 
-        economyManager =
-                new EconomyManager(this);
 
-        upgradeManager =
-                new UpgradeManager(this);
+        upgradeManager = new UpgradeManager(this);
 
 
 
@@ -69,6 +74,23 @@ public class MytheriaHoppers extends JavaPlugin {
                 );
 
 
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new HopperPlaceListener(this),
+                        this
+                );
+
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new HopperBreakListener(this),
+                        this
+                );
+
+
+
         getCommand("mytheriahoppers")
                 .setExecutor(
                         new HopperCommand(this)
@@ -76,20 +98,27 @@ public class MytheriaHoppers extends JavaPlugin {
 
 
 
+        int interval =
+                getConfig()
+                        .getInt(
+                                "settings.task-interval",
+                                20
+                        );
+
+
+
         new HopperTask(this)
                 .runTaskTimer(
                         this,
-                        20,
-                        getConfig()
-                                .getInt(
-                                "settings.task-interval",
-                                20)
+                        interval,
+                        interval
                 );
+
 
 
         getLogger()
                 .info(
-                "MytheriaHoppers enabled."
+                        "MytheriaHoppers enabled!"
                 );
 
     }
@@ -99,9 +128,21 @@ public class MytheriaHoppers extends JavaPlugin {
     @Override
     public void onDisable() {
 
-        dataManager.save();
+
+        if (dataManager != null) {
+
+            dataManager.save();
+
+        }
+
+
+        getLogger()
+                .info(
+                        "MytheriaHoppers disabled!"
+                );
 
     }
+
 
 
 
@@ -112,11 +153,13 @@ public class MytheriaHoppers extends JavaPlugin {
     }
 
 
+
     public HopperManager getHopperManager() {
 
         return hopperManager;
 
     }
+
 
 
     public EconomyManager getEconomyManager() {
@@ -126,17 +169,19 @@ public class MytheriaHoppers extends JavaPlugin {
     }
 
 
-    public DataManager getDataManager() {
-
-        return dataManager;
-
-    }
-
 
     public UpgradeManager getUpgradeManager() {
 
         return upgradeManager;
 
-}
+    }
+
+
+
+    public DataManager getDataManager() {
+
+        return dataManager;
+
+    }
 
 }
