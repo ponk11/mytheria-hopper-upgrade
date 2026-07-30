@@ -13,6 +13,7 @@ public class EconomyManager {
     private EconomyProvider provider;
 
 
+
     public EconomyManager(MytheriaHoppers plugin) {
 
         this.plugin = plugin;
@@ -34,23 +35,47 @@ public class EconomyManager {
                         );
 
 
-        if (type.equalsIgnoreCase("COINSENGINE")) {
+
+        if (
+                (type.equalsIgnoreCase("AUTO")
+                ||
+                type.equalsIgnoreCase("COINSENGINE"))
+                &&
+                Bukkit.getPluginManager()
+                        .getPlugin("CoinsEngine") != null
+        ) {
+
 
             provider =
-                    new CoinsEngineEconomy();
+                    new CoinsEngineEconomy(
+                            plugin.getConfig()
+                                    .getString(
+                                            "coinsengine.currency-id",
+                                            "coins"
+                                    )
+                    );
+
 
             plugin.getLogger()
                     .info(
-                    "Using CoinsEngine economy."
+                            "Using CoinsEngine economy."
                     );
 
+
             return;
+
         }
 
 
 
-        if (Bukkit.getPluginManager()
-                .getPlugin("Vault") != null) {
+        if (
+                (type.equalsIgnoreCase("AUTO")
+                ||
+                type.equalsIgnoreCase("VAULT"))
+                &&
+                Bukkit.getPluginManager()
+                        .getPlugin("Vault") != null
+        ) {
 
 
             RegisteredServiceProvider<Economy> rsp =
@@ -62,6 +87,7 @@ public class EconomyManager {
 
             if (rsp != null) {
 
+
                 provider =
                         new VaultEconomy(
                                 rsp.getProvider()
@@ -70,7 +96,7 @@ public class EconomyManager {
 
                 plugin.getLogger()
                         .info(
-                        "Using Vault economy."
+                                "Using Vault economy."
                         );
 
 
@@ -81,9 +107,10 @@ public class EconomyManager {
         }
 
 
+
         plugin.getLogger()
                 .warning(
-                "No economy provider found!"
+                        "No economy provider found. Upgrades disabled."
                 );
 
     }
