@@ -8,6 +8,7 @@ import me.mytheria.hoppers.listeners.GUIListener;
 import me.mytheria.hoppers.listeners.HopperInteractListener;
 import me.mytheria.hoppers.storage.DataManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import me.mytheria.hoppers.gui.UpgradeManager;
 
 public class MytheriaHoppers extends JavaPlugin {
 
@@ -19,6 +20,8 @@ public class MytheriaHoppers extends JavaPlugin {
     private EconomyManager economyManager;
 
     private DataManager dataManager;
+
+    private UpgradeManager upgradeManager;
 
 
 
@@ -44,6 +47,9 @@ public class MytheriaHoppers extends JavaPlugin {
 
         economyManager =
                 new EconomyManager(this);
+
+        upgradeManager =
+                new UpgradeManager(this);
 
 
 
@@ -125,5 +131,12 @@ public class MytheriaHoppers extends JavaPlugin {
         return dataManager;
 
     }
+
+
+    public UpgradeManager getUpgradeManager() {
+
+        return upgradeManager;
+
+}
 
 }
