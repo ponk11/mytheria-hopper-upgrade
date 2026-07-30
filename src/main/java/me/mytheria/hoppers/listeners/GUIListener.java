@@ -1,97 +1,79 @@
-package me.mytheria.hoppers.listeners;
-
-import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.gui.HopperHolder;
-import me.mytheria.hoppers.hopper.HopperData;
-import org.bukkit.ChatColor;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.entity.Player;
-
-public class GUIListener implements Listener {
+if (event.getSlot() == 11) {
 
 
-    private final MytheriaHoppers plugin;
+    int next =
+            data.getSpeedLevel() + 1;
 
 
-    public GUIListener(MytheriaHoppers plugin) {
-        this.plugin = plugin;
-    }
-
-
-
-    @EventHandler
-    public void onClick(InventoryClickEvent event) {
-
-
-        if (!(event.getInventory()
-                .getHolder()
-                instanceof HopperHolder holder)) {
-
-            return;
-        }
-
-
-        event.setCancelled(true);
-
-
-
-        if (!(event.getWhoClicked()
-                instanceof Player player)) {
-
-            return;
-        }
-
-
-
-        HopperData data =
-                plugin.getHopperManager()
-                        .getData(
-                                holder.getLocation()
-                        );
-
-
-
-        if (event.getSlot() == 11) {
-
-            data.setSpeedLevel(
-                    data.getSpeedLevel() + 1
+    int max =
+            plugin.getConfig()
+                    .getInt(
+                    "settings.max-speed-level"
             );
 
 
-            player.sendMessage(
-                    color("&dMytheria Hoppers &8» &aSpeed upgraded!")
-            );
+    if (next > max) {
 
-        }
-
-
-
-        if (event.getSlot() == 15) {
-
-            data.setRangeLevel(
-                    data.getRangeLevel() + 1
-            );
-
-
-            player.sendMessage(
-                    color("&dMytheria Hoppers &8» &aRange upgraded!")
-            );
-
-        }
-
-    }
-
-
-
-    private String color(String text) {
-
-        return ChatColor.translateAlternateColorCodes(
-                '&',
-                text
+        player.sendMessage(
+                color("&cMaximum speed level!")
         );
 
+        return;
     }
+
+
+    data.setSpeedLevel(next);
+
+
+    plugin.getDataManager()
+            .save();
+
+
+    player.sendMessage(
+            color(
+            "&dMytheria Hoppers &8» &aSpeed upgraded!"
+            )
+    );
+
+}
+
+
+
+if (event.getSlot() == 15) {
+
+
+    int next =
+            data.getRangeLevel() + 1;
+
+
+    int max =
+            plugin.getConfig()
+                    .getInt(
+                    "settings.max-range-level"
+            );
+
+
+    if (next > max) {
+
+        player.sendMessage(
+                color("&cMaximum range level!")
+        );
+
+        return;
+    }
+
+
+    data.setRangeLevel(next);
+
+
+    plugin.getDataManager()
+            .save();
+
+
+    player.sendMessage(
+            color(
+            "&dMytheria Hoppers &8» &aRange upgraded!"
+            )
+    );
 
 }
