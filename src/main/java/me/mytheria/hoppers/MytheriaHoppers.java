@@ -34,6 +34,8 @@ public class MytheriaHoppers extends JavaPlugin {
 
         dataManager =
                 new DataManager(this);
+        
+        dataManager.load();
 
 
         hopperManager =
