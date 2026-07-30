@@ -2,12 +2,18 @@ package me.mytheria.hoppers.hopper;
 
 import me.mytheria.hoppers.MytheriaHoppers;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Map;
+
 public class HopperTask extends BukkitRunnable {
+
 
     private final MytheriaHoppers plugin;
 
@@ -17,27 +23,57 @@ public class HopperTask extends BukkitRunnable {
     }
 
 
+
     @Override
     public void run() {
 
-        HopperManager manager = plugin.getHopperManager();
+
+        HopperManager manager =
+                plugin.getHopperManager();
 
 
-        for (Location location : manager.getHoppers().keySet()) {
+
+        for (Map.Entry<Location, HopperData> entry :
+                manager.getHoppers().entrySet()) {
+
+
+            Location location =
+                    entry.getKey();
+
 
             if (!location.getChunk().isLoaded()) {
                 continue;
             }
 
 
-            HopperData data = manager.getData(location);
+            if (location.getBlock()
+                    .getType()
+                    != Material.HOPPER) {
+
+                continue;
+            }
 
 
-            int range = plugin.getConfig()
-                    .getInt(
-                            "range-upgrades." + data.getRangeLevel() + ".range",
+            Hopper hopper =
+                    (Hopper) location.getBlock()
+                            .getState();
+
+
+
+            HopperData data =
+                    entry.getValue();
+
+
+
+            int range =
+                    plugin.getConfig()
+                            .getInt(
+                            "range-upgrades."
+                            + data.getRangeLevel()
+                            + ".range",
                             0
                     );
+
 
 
             if (range <= 0) {
@@ -45,13 +81,21 @@ public class HopperTask extends BukkitRunnable {
             }
 
 
-            for (Entity entity : location.getWorld()
-                    .getNearbyEntities(
-                            location,
-                            range,
-                            range,
-                            range
-                    )) {
+
+            Inventory inventory =
+                    hopper.getInventory();
+
+
+
+            for (Entity entity :
+                    location.getWorld()
+                            .getNearbyEntities(
+                                    location,
+                                    range,
+                                    range,
+                                    range
+                            )) {
+
 
 
                 if (!(entity instanceof Item item)) {
@@ -59,19 +103,80 @@ public class HopperTask extends BukkitRunnable {
                 }
 
 
-                ItemStack stack = item.getItemStack();
+
+                ItemStack stack =
+                        item.getItemStack();
 
 
-                location.getWorld()
-                        .dropItemNaturally(
-                                location,
+
+                HashMapResult result =
+                        addItem(
+                                inventory,
                                 stack
                         );
 
 
-                item.remove();
+
+                if (result.leftOver == null) {
+
+                    item.remove();
+
+                } else {
+
+                    item.setItemStack(
+                            result.leftOver
+                    );
+
+                }
 
             }
+
         }
+
     }
+
+
+
+    private HashMapResult addItem(
+            Inventory inventory,
+            ItemStack stack
+    ) {
+
+
+        Map<Integer, ItemStack> leftover =
+                inventory.addItem(stack);
+
+
+
+        if (leftover.isEmpty()) {
+
+            return new HashMapResult(null);
+
+        }
+
+
+
+        return new HashMapResult(
+                leftover.values()
+                        .iterator()
+                        .next()
+        );
+
+    }
+
+
+
+    private static class HashMapResult {
+
+        private final ItemStack leftOver;
+
+
+        private HashMapResult(ItemStack leftOver) {
+
+            this.leftOver = leftOver;
+
+        }
+
+    }
+
 }
