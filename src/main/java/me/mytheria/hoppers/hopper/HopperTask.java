@@ -28,17 +28,15 @@ public class HopperTask extends BukkitRunnable {
     public void run() {
 
 
-        HopperManager manager =
-                plugin.getHopperManager();
-
-
-
         for (Map.Entry<Location, HopperData> entry :
-                manager.getHoppers().entrySet()) {
+                plugin.getHopperManager()
+                        .getHoppers()
+                        .entrySet()) {
 
 
             Location location =
                     entry.getKey();
+
 
 
             if (!location.getChunk().isLoaded()) {
@@ -54,26 +52,22 @@ public class HopperTask extends BukkitRunnable {
             }
 
 
+
             Hopper hopper =
                     (Hopper) location.getBlock()
                             .getState();
 
 
 
-            HopperData data =
-                    entry.getValue();
-
-
-
             int range =
                     plugin.getConfig()
                             .getInt(
-                            "range-upgrades."
-                            + data.getRangeLevel()
-                            + ".range",
-                            0
-                    );
-
+                                    "range-upgrades."
+                                    + entry.getValue()
+                                    .getRangeLevel()
+                                    + ".range",
+                                    0
+                            );
 
 
             if (range <= 0) {
@@ -109,71 +103,14 @@ public class HopperTask extends BukkitRunnable {
 
 
 
-                HashMapResult result =
-                        addItem(
-                                inventory,
-                                stack
-                        );
-
-
-
-                if (result.leftOver == null) {
+                if (inventory.addItem(stack)
+                        .isEmpty()) {
 
                     item.remove();
-
-                } else {
-
-                    item.setItemStack(
-                            result.leftOver
-                    );
 
                 }
 
             }
-
-        }
-
-    }
-
-
-
-    private HashMapResult addItem(
-            Inventory inventory,
-            ItemStack stack
-    ) {
-
-
-        Map<Integer, ItemStack> leftover =
-                inventory.addItem(stack);
-
-
-
-        if (leftover.isEmpty()) {
-
-            return new HashMapResult(null);
-
-        }
-
-
-
-        return new HashMapResult(
-                leftover.values()
-                        .iterator()
-                        .next()
-        );
-
-    }
-
-
-
-    private static class HashMapResult {
-
-        private final ItemStack leftOver;
-
-
-        private HashMapResult(ItemStack leftOver) {
-
-            this.leftOver = leftOver;
 
         }
 
