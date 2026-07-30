@@ -17,6 +17,7 @@ public class HopperCommand implements CommandExecutor {
     }
 
 
+
     @Override
     public boolean onCommand(
             CommandSender sender,
@@ -29,14 +30,14 @@ public class HopperCommand implements CommandExecutor {
         if (args.length == 0) {
 
             sender.sendMessage(
-                    ChatColor.translateAlternateColorCodes(
-                            '&',
-                            "&dMytheria Hoppers &7- &f/mh reload"
+                    color(
+                    "&dMytheria Hoppers &7- &f/mh reload"
                     )
             );
 
             return true;
         }
+
 
 
         if (args[0].equalsIgnoreCase("reload")) {
@@ -46,36 +47,56 @@ public class HopperCommand implements CommandExecutor {
                     "mytheriahoppers.admin.reload"
             )) {
 
+
                 sender.sendMessage(
-                        color("&cNo permission.")
+                        color(
+                        "&cYou do not have permission."
+                        )
                 );
 
                 return true;
+
             }
+
 
 
             plugin.reloadConfig();
 
 
+
             sender.sendMessage(
-                    color("&dMytheria Hoppers &8» &aConfig reloaded.")
+                    color(
+                    "&dMytheria Hoppers &8» &aConfig reloaded!"
+                    )
             );
 
 
             return true;
+
         }
 
 
+
+        sender.sendMessage(
+                color(
+                "&cUnknown command."
+                )
+        );
+
+
         return true;
+
     }
 
 
-    private String color(String message) {
+
+    private String color(String text) {
 
         return ChatColor.translateAlternateColorCodes(
                 '&',
-                message
+                text
         );
 
     }
+
 }
