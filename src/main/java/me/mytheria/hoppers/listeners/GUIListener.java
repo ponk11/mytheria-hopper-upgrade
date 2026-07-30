@@ -1,6 +1,7 @@
 package me.mytheria.hoppers.listeners;
 
 import me.mytheria.hoppers.MytheriaHoppers;
+import me.mytheria.hoppers.gui.HopperHolder;
 import me.mytheria.hoppers.hopper.HopperData;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
@@ -21,12 +22,12 @@ public class GUIListener implements Listener {
 
 
     @EventHandler
-    public void click(InventoryClickEvent event) {
+    public void onClick(InventoryClickEvent event) {
 
 
-        if (!event.getView()
-                .getTitle()
-                .contains("Mytheria")) {
+        if (!(event.getInventory()
+                .getHolder()
+                instanceof HopperHolder holder)) {
 
             return;
         }
@@ -35,7 +36,10 @@ public class GUIListener implements Listener {
         event.setCancelled(true);
 
 
-        if (!(event.getWhoClicked() instanceof Player player)) {
+
+        if (!(event.getWhoClicked()
+                instanceof Player player)) {
+
             return;
         }
 
@@ -44,41 +48,21 @@ public class GUIListener implements Listener {
         HopperData data =
                 plugin.getHopperManager()
                         .getData(
-                                player.getLocation()
+                                holder.getLocation()
                         );
 
 
 
         if (event.getSlot() == 11) {
 
-
-            int level =
-                    data.getSpeedLevel() + 1;
-
-
-            if (level >
-                    plugin.getConfig()
-                            .getInt(
-                                    "settings.max-speed-level"
-                            )) {
-
-
-                player.sendMessage(
-                        color("&cMaximum level reached.")
-                );
-
-                return;
-
-            }
-
-
-            data.setSpeedLevel(level);
+            data.setSpeedLevel(
+                    data.getSpeedLevel() + 1
+            );
 
 
             player.sendMessage(
                     color("&dMytheria Hoppers &8» &aSpeed upgraded!")
             );
-
 
         }
 
@@ -86,28 +70,9 @@ public class GUIListener implements Listener {
 
         if (event.getSlot() == 15) {
 
-
-            int level =
-                    data.getRangeLevel() + 1;
-
-
-            if (level >
-                    plugin.getConfig()
-                            .getInt(
-                                    "settings.max-range-level"
-                            )) {
-
-
-                player.sendMessage(
-                        color("&cMaximum level reached.")
-                );
-
-                return;
-
-            }
-
-
-            data.setRangeLevel(level);
+            data.setRangeLevel(
+                    data.getRangeLevel() + 1
+            );
 
 
             player.sendMessage(
