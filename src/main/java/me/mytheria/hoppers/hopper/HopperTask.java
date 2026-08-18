@@ -3,7 +3,6 @@ package me.mytheria.hoppers.hopper;
 import me.mytheria.hoppers.MytheriaHoppers;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
@@ -43,61 +42,15 @@ public class HopperTask extends BukkitRunnable {
                 continue;
             }
 
-            Hopper hopper =
-                    (Hopper) location.getBlock().getState();
-
-            int speedLevel =
-                    data.getSpeedLevel();
-
             int rangeLevel =
                     data.getRangeLevel();
 
-            /*
-             * Speed upgrades use Paper's native hopper
-             * transfer cooldown.
-             */
-            if (speedLevel > 0) {
-
-                int transferTicks =
-                        plugin.getConfig()
-                                .getInt(
-                                        "speed-upgrades."
-                                                + speedLevel
-                                                + ".transfer-ticks",
-                                        8
-                                );
-
-                if (hopper.getTransferCooldown()
-                        > transferTicks) {
-
-                    hopper.setTransferCooldown(
-                            transferTicks
-                    );
-
-                    hopper.update(
-                            false,
-                            false
-                    );
-                }
-            }
-
-            /*
-             * Range 0 means vanilla hopper collection.
-             * Only upgraded range hoppers need the
-             * additional entity scan.
-             */
             if (rangeLevel <= 0) {
                 continue;
             }
 
-            int range =
-                    plugin.getConfig()
-                            .getInt(
-                                    "range-upgrades."
-                                            + rangeLevel
-                                            + ".range",
-                                    1
-                            );
+            int speedLevel =
+                    data.getSpeedLevel();
 
             int transferTicks =
                     plugin.getConfig()
@@ -108,19 +61,29 @@ public class HopperTask extends BukkitRunnable {
                                     8
                             );
 
+            if (speedLevel <= 0) {
+                transferTicks = 8;
+            }
+
             if (currentTick
                     - data.getLastTransferTick()
                     < transferTicks) {
                 continue;
             }
 
-            data.setLastTransferTick(
-                    currentTick
-            );
+            data.setLastTransferTick(currentTick);
+
+            int range =
+                    plugin.getConfig()
+                            .getInt(
+                                    "range-upgrades."
+                                            + rangeLevel
+                                            + ".range",
+                                    1
+                            );
 
             collectItems(
                     location,
-                    hopper.getInventory(),
                     range
             );
         }
@@ -128,9 +91,18 @@ public class HopperTask extends BukkitRunnable {
 
     private void collectItems(
             Location location,
-            Inventory inventory,
             int range
     ) {
+
+        if (location.getWorld() == null) {
+            return;
+        }
+
+        Inventory inventory =
+                ((org.bukkit.block.Hopper)
+                        location.getBlock()
+                                .getState())
+                        .getInventory();
 
         for (Entity entity :
                 location.getWorld()
@@ -172,9 +144,7 @@ public class HopperTask extends BukkitRunnable {
                             .iterator()
                             .next();
 
-            item.setItemStack(
-                    remaining
-            );
+            item.setItemStack(remaining);
         }
     }
 }
