@@ -2,68 +2,69 @@ package me.mytheria.hoppers.listeners;
 
 import me.mytheria.hoppers.MytheriaHoppers;
 import me.mytheria.hoppers.gui.HopperGUI;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
 public class HopperInteractListener implements Listener {
 
-
     private final MytheriaHoppers plugin;
-
 
     public HopperInteractListener(MytheriaHoppers plugin) {
         this.plugin = plugin;
     }
 
-
     @EventHandler
-    public void onClick(PlayerInteractEvent event) {
+    public void onInteract(PlayerInteractEvent event) {
 
-
-        if (event.getHand() != EquipmentSlot.HAND) {
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
-
 
         if (!event.getPlayer().isSneaking()) {
             return;
         }
 
-
         if (event.getClickedBlock() == null) {
             return;
         }
 
-
-        if (event.getClickedBlock().getType() != Material.HOPPER) {
+        if (event.getClickedBlock().getType()
+                != Material.HOPPER) {
             return;
         }
 
+        Player player =
+                event.getPlayer();
 
-        Player player = event.getPlayer();
+        event.setCancelled(true);
 
+        if (!player.hasPermission(
+                "mytheriahoppers.use"
+        )) {
 
-        if (!player.hasPermission("mytheriahoppers.use")) {
+            player.sendMessage(
+                    ChatColor.translateAlternateColorCodes(
+                            '&',
+                            plugin.getConfig()
+                                    .getString(
+                                            "messages.no-permission",
+                                            "&cYou do not have permission."
+                                    )
+                    )
+            );
+
             return;
         }
-
-
-        Hopper hopper = (Hopper) event
-                .getClickedBlock()
-                .getState();
-
 
         new HopperGUI(
                 plugin,
-                hopper.getLocation()
+                event.getClickedBlock()
+                        .getLocation()
         ).open(player);
-
-
-        event.setCancelled(true);
     }
 }
