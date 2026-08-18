@@ -3,54 +3,49 @@ package me.mytheria.hoppers.hopper;
 import me.mytheria.hoppers.MytheriaHoppers;
 import org.bukkit.Location;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HopperManager {
 
-
     private final MytheriaHoppers plugin;
 
-    private final Map<Location, HopperData> hoppers;
-
+    private final Map<Location, HopperData> hoppers =
+            new ConcurrentHashMap<>();
 
     public HopperManager(MytheriaHoppers plugin) {
-
         this.plugin = plugin;
-
-        this.hoppers = new HashMap<>();
-
     }
 
+    public Map<Location, HopperData> getHoppers() {
+        return hoppers;
+    }
 
     public HopperData getData(Location location) {
 
+        Location blockLocation =
+                location.getBlock()
+                        .getLocation();
+
         return hoppers.computeIfAbsent(
-                location,
+                blockLocation,
                 key -> new HopperData()
         );
-
     }
-
-
-    public boolean hasHopper(Location location) {
-
-        return hoppers.containsKey(location);
-
-    }
-
-
-    public Map<Location, HopperData> getHoppers() {
-
-        return hoppers;
-
-    }
-
 
     public void remove(Location location) {
 
-        hoppers.remove(location);
-
+        hoppers.remove(
+                location.getBlock()
+                        .getLocation()
+        );
     }
 
+    public boolean contains(Location location) {
+
+        return hoppers.containsKey(
+                location.getBlock()
+                        .getLocation()
+        );
+    }
 }
