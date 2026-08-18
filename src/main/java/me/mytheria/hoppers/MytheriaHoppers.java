@@ -14,49 +14,29 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class MytheriaHoppers extends JavaPlugin {
 
-
     private static MytheriaHoppers instance;
 
     private HopperManager hopperManager;
-
     private EconomyManager economyManager;
-
     private UpgradeManager upgradeManager;
-
     private DataManager dataManager;
-
-
 
     @Override
     public void onEnable() {
 
-
         instance = this;
-
 
         saveDefaultConfig();
 
-
-
         dataManager = new DataManager(this);
-
-
 
         hopperManager = new HopperManager(this);
 
-
-
         dataManager.load();
-
-
 
         economyManager = new EconomyManager(this);
 
-
-
         upgradeManager = new UpgradeManager(this);
-
-
 
         getServer()
                 .getPluginManager()
@@ -65,14 +45,12 @@ public class MytheriaHoppers extends JavaPlugin {
                         this
                 );
 
-
         getServer()
                 .getPluginManager()
                 .registerEvents(
                         new GUIListener(this),
                         this
                 );
-
 
         getServer()
                 .getPluginManager()
@@ -81,7 +59,6 @@ public class MytheriaHoppers extends JavaPlugin {
                         this
                 );
 
-
         getServer()
                 .getPluginManager()
                 .registerEvents(
@@ -89,99 +66,60 @@ public class MytheriaHoppers extends JavaPlugin {
                         this
                 );
 
+        if (getCommand("mytheriahoppers") != null) {
+            getCommand("mytheriahoppers")
+                    .setExecutor(
+                            new HopperCommand(this)
+                    );
+        }
 
-
-        getCommand("mytheriahoppers")
-                .setExecutor(
-                        new HopperCommand(this)
-                );
-
-
-
-        int interval =
-                getConfig()
-                        .getInt(
-                                "settings.task-interval",
-                                20
-                        );
-
-
-
+        /*
+         * Run the hopper task every server tick.
+         *
+         * Each hopper controls its own transfer speed
+         * using the transfer-ticks value from config.yml.
+         */
         new HopperTask(this)
                 .runTaskTimer(
                         this,
-                        interval,
-                        interval
+                        1L,
+                        1L
                 );
 
-
-
-        getLogger()
-                .info(
-                        "MytheriaHoppers enabled!"
-                );
-
+        getLogger().info(
+                "Mytheria Hoppers enabled!"
+        );
     }
-
-
 
     @Override
     public void onDisable() {
 
-
         if (dataManager != null) {
-
             dataManager.save();
-
         }
 
-
-        getLogger()
-                .info(
-                        "MytheriaHoppers disabled!"
-                );
-
+        getLogger().info(
+                "Mytheria Hoppers disabled!"
+        );
     }
-
-
-
 
     public static MytheriaHoppers getInstance() {
-
         return instance;
-
     }
-
-
 
     public HopperManager getHopperManager() {
-
         return hopperManager;
-
     }
-
-
 
     public EconomyManager getEconomyManager() {
-
         return economyManager;
-
     }
-
-
 
     public UpgradeManager getUpgradeManager() {
-
         return upgradeManager;
-
     }
-
-
 
     public DataManager getDataManager() {
-
         return dataManager;
-
     }
-
 }
