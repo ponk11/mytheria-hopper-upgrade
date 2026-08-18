@@ -11,38 +11,46 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 
 public class GUIListener implements Listener {
 
-
     private final MytheriaHoppers plugin;
-
 
     public GUIListener(MytheriaHoppers plugin) {
         this.plugin = plugin;
     }
 
-
-
     @EventHandler
-    public void onClick(InventoryClickEvent event) {
-
+    public void onClick(
+            InventoryClickEvent event
+    ) {
 
         if (!(event.getInventory().getHolder()
                 instanceof HopperHolder holder)) {
-
             return;
         }
-
 
         event.setCancelled(true);
 
-
-
         if (!(event.getWhoClicked()
                 instanceof Player player)) {
-
             return;
         }
 
+        if (!player.hasPermission(
+                "mytheriahoppers.use"
+        )) {
+            player.closeInventory();
 
+            player.sendMessage(
+                    color(
+                            plugin.getConfig()
+                                    .getString(
+                                            "messages.no-permission",
+                                            "&cYou do not have permission."
+                                    )
+                    )
+            );
+
+            return;
+        }
 
         HopperData data =
                 plugin.getHopperManager()
@@ -50,103 +58,145 @@ public class GUIListener implements Listener {
                                 holder.getLocation()
                         );
 
-
-
-        if (event.getSlot() == 11) {
-
-
-            boolean upgraded =
-                    plugin.getUpgradeManager()
-                            .upgradeSpeed(
-                                    player,
-                                    data
-                            );
-
-
-            if (upgraded) {
-
-                plugin.getDataManager()
-                        .save();
-
-
-                player.sendMessage(
-                        color(
-                        "&dMytheria &5Hoppers &8» &aSpeed upgrade purchased!"
-                        )
-                );
-
-
-            } else {
-
-
-                player.sendMessage(
-                        color(
-                        "&dMytheria &5Hoppers &8» &cYou cannot afford this upgrade!"
-                        )
-                );
-
-            }
-
-
+        if (data == null) {
             player.closeInventory();
-
+            return;
         }
 
+        switch (event.getSlot()) {
 
+            case 11 -> {
 
+                int max =
+                        plugin.getConfig()
+                                .getInt(
+                                        "settings.max-speed-level",
+                                        4
+                                );
 
-        if (event.getSlot() == 15) {
+                if (data.getSpeedLevel() >= max) {
 
+                    player.sendMessage(
+                            color(
+                                    plugin.getConfig()
+                                            .getString(
+                                                    "messages.max-level",
+                                                    "&cThis upgrade is already maxed!"
+                                            )
+                            )
+                    );
 
-            boolean upgraded =
-                    plugin.getUpgradeManager()
-                            .upgradeRange(
-                                    player,
-                                    data
-                            );
+                    return;
+                }
 
+                boolean upgraded =
+                        plugin.getUpgradeManager()
+                                .upgradeSpeed(
+                                        player,
+                                        data
+                                );
 
-            if (upgraded) {
+                if (upgraded) {
 
+                    plugin.getDataManager()
+                            .save();
 
-                plugin.getDataManager()
-                        .save();
+                    player.sendMessage(
+                            color(
+                                    plugin.getConfig()
+                                            .getString(
+                                                    "messages.upgraded",
+                                                    "&aUpgrade purchased!"
+                                            )
+                            )
+                    );
 
+                    player.closeInventory();
 
-                player.sendMessage(
-                        color(
-                        "&dMytheria &5Hoppers &8» &aRange upgrade purchased!"
-                        )
-                );
+                } else {
 
-
-            } else {
-
-
-                player.sendMessage(
-                        color(
-                        "&dMytheria &5Hoppers &8» &cYou cannot afford this upgrade!"
-                        )
-                );
-
+                    player.sendMessage(
+                            color(
+                                    plugin.getConfig()
+                                            .getString(
+                                                    "messages.not-enough-money",
+                                                    "&cYou do not have enough money."
+                                            )
+                            )
+                    );
+                }
             }
 
+            case 15 -> {
 
-            player.closeInventory();
+                int max =
+                        plugin.getConfig()
+                                .getInt(
+                                        "settings.max-range-level",
+                                        4
+                                );
 
+                if (data.getRangeLevel() >= max) {
+
+                    player.sendMessage(
+                            color(
+                                    plugin.getConfig()
+                                            .getString(
+                                                    "messages.max-level",
+                                                    "&cThis upgrade is already maxed!"
+                                            )
+                            )
+                    );
+
+                    return;
+                }
+
+                boolean upgraded =
+                        plugin.getUpgradeManager()
+                                .upgradeRange(
+                                        player,
+                                        data
+                                );
+
+                if (upgraded) {
+
+                    plugin.getDataManager()
+                            .save();
+
+                    player.sendMessage(
+                            color(
+                                    plugin.getConfig()
+                                            .getString(
+                                                    "messages.upgraded",
+                                                    "&aUpgrade purchased!"
+                                            )
+                            );
+
+                    player.closeInventory();
+
+                } else {
+
+                    player.sendMessage(
+                            color(
+                                    plugin.getConfig()
+                                            .getString(
+                                                    "messages.not-enough-money",
+                                                    "&cYou do not have enough money."
+                                            )
+                            );
+                }
+            }
+
+            default -> {
+            }
         }
-
     }
 
-
-
-    private String color(String message) {
+    private String color(String text) {
 
         return ChatColor.translateAlternateColorCodes(
                 '&',
-                message
+                text
         );
-
     }
-
 }
