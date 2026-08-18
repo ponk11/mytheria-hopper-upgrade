@@ -11,32 +11,28 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class HopperGUI {
-
 
     private final MytheriaHoppers plugin;
     private final Location location;
 
-
-    public HopperGUI(MytheriaHoppers plugin, Location location) {
-
+    public HopperGUI(
+            MytheriaHoppers plugin,
+            Location location
+    ) {
         this.plugin = plugin;
         this.location = location;
-
     }
-
-
 
     public void open(Player player) {
 
-
         HopperHolder holder =
                 new HopperHolder(location);
-
-
 
         Inventory inventory =
                 Bukkit.createInventory(
@@ -45,198 +41,294 @@ public class HopperGUI {
                         color(
                                 plugin.getConfig()
                                         .getString(
-                                                "gui.title"
+                                                "gui.title",
+                                                "&d✦ Mytheria Hoppers ✦"
                                         )
                         )
                 );
 
-
-
         holder.setInventory(inventory);
-
-
 
         HopperData data =
                 plugin.getHopperManager()
                         .getData(location);
 
-
-
         fill(inventory);
 
-
-
-        int nextSpeed =
-                data.getSpeedLevel() + 1;
-
-
-        int nextRange =
-                data.getRangeLevel() + 1;
-
-
-
-        inventory.setItem(
-                11,
-                create(
-                        Material.NETHER_STAR,
-                        "&dSpeed Upgrade",
-                        List.of(
-                                "&7Current Level: &f"
-                                        + data.getSpeedLevel(),
-                                "&7",
-                                "&7Cost: &a$"
-                                        + plugin.getConfig()
-                                        .getInt(
-                                                "speed-upgrades."
-                                                        + nextSpeed
-                                                        + ".cost"
-                                        ),
-                                "&7",
-                                "&aClick to upgrade"
-                        )
-                )
+        createSpeedItem(
+                inventory,
+                data
         );
 
-
-
-        inventory.setItem(
-                15,
-                create(
-                        Material.ENDER_EYE,
-                        "&dRange Upgrade",
-                        List.of(
-                                "&7Current Level: &f"
-                                        + data.getRangeLevel(),
-                                "&7",
-                                "&7Cost: &a$"
-                                        + plugin.getConfig()
-                                        .getInt(
-                                                "range-upgrades."
-                                                        + nextRange
-                                                        + ".cost"
-                                        ),
-                                "&7",
-                                "&aClick to upgrade"
-                        )
-                )
+        createRangeItem(
+                inventory,
+                data
         );
-
-
 
         inventory.setItem(
                 13,
-                create(
+                createItem(
                         Material.HOPPER,
                         "&dHopper Information",
                         List.of(
+                                "&7",
                                 "&7Speed Level: &f"
                                         + data.getSpeedLevel(),
                                 "&7Range Level: &f"
-                                        + data.getRangeLevel()
+                                        + data.getRangeLevel(),
+                                "&7",
+                                "&8Location: "
+                                        + location.getBlockX()
+                                        + ", "
+                                        + location.getBlockY()
+                                        + ", "
+                                        + location.getBlockZ()
                         )
                 )
         );
 
-
-
         player.openInventory(inventory);
-
     }
 
+    private void createSpeedItem(
+            Inventory inventory,
+            HopperData data
+    ) {
 
+        int current =
+                data.getSpeedLevel();
 
-    private void fill(Inventory inventory) {
+        int max =
+                plugin.getConfig()
+                        .getInt(
+                                "settings.max-speed-level",
+                                4
+                        );
 
+        if (current >= max) {
+
+            inventory.setItem(
+                    11,
+                    createItem(
+                            Material.NETHER_STAR,
+                            "&dSpeed Upgrade",
+                            List.of(
+                                    "&7",
+                                    "&7Current Level: &f"
+                                            + current,
+                                    "&7",
+                                    "&d✦ &fMAX LEVEL",
+                                    "&7",
+                                    "&8This upgrade is fully upgraded."
+                            )
+                    )
+            );
+
+            return;
+        }
+
+        int next = current + 1;
+
+        double cost =
+                plugin.getConfig()
+                        .getDouble(
+                                "speed-upgrades."
+                                        + next
+                                        + ".cost"
+                        );
+
+        int ticks =
+                plugin.getConfig()
+                        .getInt(
+                                "speed-upgrades."
+                                        + next
+                                        + ".transfer-ticks"
+                        );
+
+        inventory.setItem(
+                11,
+                createItem(
+                        Material.NETHER_STAR,
+                        "&dSpeed Upgrade",
+                        List.of(
+                                "&7",
+                                "&7Current Level: &f"
+                                        + current,
+                                "&7Next Level: &d"
+                                        + next,
+                                "&7",
+                                "&7Transfer Speed: &f"
+                                        + ticks
+                                        + " ticks",
+                                "&7Cost: &a$"
+                                        + formatMoney(cost),
+                                "&7",
+                                "&aClick to purchase"
+                        )
+                )
+        );
+    }
+
+    private void createRangeItem(
+            Inventory inventory,
+            HopperData data
+    ) {
+
+        int current =
+                data.getRangeLevel();
+
+        int max =
+                plugin.getConfig()
+                        .getInt(
+                                "settings.max-range-level",
+                                4
+                        );
+
+        if (current >= max) {
+
+            inventory.setItem(
+                    15,
+                    createItem(
+                            Material.ENDER_EYE,
+                            "&dRange Upgrade",
+                            List.of(
+                                    "&7",
+                                    "&7Current Level: &f"
+                                            + current,
+                                    "&7",
+                                    "&d✦ &fMAX LEVEL",
+                                    "&7",
+                                    "&8This upgrade is fully upgraded."
+                            )
+                    )
+            );
+
+            return;
+        }
+
+        int next = current + 1;
+
+        double cost =
+                plugin.getConfig()
+                        .getDouble(
+                                "range-upgrades."
+                                        + next
+                                        + ".cost"
+                        );
+
+        int range =
+                plugin.getConfig()
+                        .getInt(
+                                "range-upgrades."
+                                        + next
+                                        + ".range"
+                        );
+
+        inventory.setItem(
+                15,
+                createItem(
+                        Material.ENDER_EYE,
+                        "&dRange Upgrade",
+                        List.of(
+                                "&7",
+                                "&7Current Level: &f"
+                                        + current,
+                                "&7Next Level: &d"
+                                        + next,
+                                "&7",
+                                "&7Collection Range: &f"
+                                        + range
+                                        + " blocks",
+                                "&7Cost: &a$"
+                                        + formatMoney(cost),
+                                "&7",
+                                "&aClick to purchase"
+                        )
+                )
+        );
+    }
+
+    private void fill(
+            Inventory inventory
+    ) {
 
         ItemStack glass =
                 new ItemStack(
-                        Material.PINK_STAINED_GLASS_PANE
+                        Material.PURPLE_STAINED_GLASS_PANE
                 );
-
 
         ItemMeta meta =
                 glass.getItemMeta();
 
-
-        meta.setDisplayName(" ");
-
-
-        glass.setItemMeta(meta);
-
-
+        if (meta != null) {
+            meta.setDisplayName(" ");
+            glass.setItemMeta(meta);
+        }
 
         for (int i = 0; i < inventory.getSize(); i++) {
 
-
-            if (inventory.getItem(i) == null) {
-
-                inventory.setItem(
-                        i,
-                        glass
-                );
-
-            }
-
+            inventory.setItem(
+                    i,
+                    glass
+            );
         }
-
     }
 
-
-
-    private ItemStack create(
+    private ItemStack createItem(
             Material material,
             String name,
             List<String> lore
     ) {
 
-
         ItemStack item =
                 new ItemStack(material);
-
 
         ItemMeta meta =
                 item.getItemMeta();
 
-
+        if (meta == null) {
+            return item;
+        }
 
         meta.setDisplayName(
                 color(name)
         );
 
-
-
         ArrayList<String> lines =
                 new ArrayList<>();
 
-
         for (String line : lore) {
-
             lines.add(
                     color(line)
             );
-
         }
-
 
         meta.setLore(lines);
 
-
         item.setItemMeta(meta);
 
-
         return item;
-
     }
 
+    private String formatMoney(
+            double amount
+    ) {
 
-
-    private String color(String text) {
-
-        return ChatColor.translateAlternateColorCodes(
-                '&',
-                text
-        );
-
+        return NumberFormat
+                .getNumberInstance(
+                        Locale.US
+                )
+                .format(amount);
     }
 
+    private String color(
+            String text
+    ) {
+
+        return ChatColor
+                .translateAlternateColorCodes(
+                        '&',
+                        text
+                );
+    }
 }
