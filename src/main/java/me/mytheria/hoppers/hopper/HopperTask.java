@@ -23,8 +23,13 @@ public class HopperTask extends BukkitRunnable {
     @Override
     public void run() {
 
+        int currentTick =
+                plugin.getServer().getCurrentTick();
+
         for (Map.Entry<Location, HopperData> entry :
-                plugin.getHopperManager().getHoppers().entrySet()) {
+                plugin.getHopperManager()
+                        .getHoppers()
+                        .entrySet()) {
 
             Location location = entry.getKey();
             HopperData data = entry.getValue();
@@ -33,42 +38,89 @@ public class HopperTask extends BukkitRunnable {
                 continue;
             }
 
-            if (location.getBlock().getType() != Material.HOPPER) {
+            if (location.getBlock().getType()
+                    != Material.HOPPER) {
                 continue;
             }
 
-            Hopper hopper = (Hopper) location.getBlock().getState();
-            Inventory inventory = hopper.getInventory();
+            Hopper hopper =
+                    (Hopper) location.getBlock().getState();
 
-            int range = plugin.getConfig().getInt(
-                    "range-upgrades."
-                            + data.getRangeLevel()
-                            + ".range",
-                    1
-            );
+            int speedLevel =
+                    data.getSpeedLevel();
 
-            int transferTicks = plugin.getConfig().getInt(
-                    "speed-upgrades."
-                            + data.getSpeedLevel()
-                            + ".transfer-ticks",
-                    8
-            );
+            int rangeLevel =
+                    data.getRangeLevel();
 
-            long currentTick =
-                    plugin.getServer()
-                            .getCurrentTick();
+            /*
+             * Speed upgrades use Paper's native hopper
+             * transfer cooldown.
+             */
+            if (speedLevel > 0) {
 
-            long lastTick = data.getLastTransferTick();
+                int transferTicks =
+                        plugin.getConfig()
+                                .getInt(
+                                        "speed-upgrades."
+                                                + speedLevel
+                                                + ".transfer-ticks",
+                                        8
+                                );
 
-            if (currentTick - lastTick < transferTicks) {
+                if (hopper.getTransferCooldown()
+                        > transferTicks) {
+
+                    hopper.setTransferCooldown(
+                            transferTicks
+                    );
+
+                    hopper.update(
+                            false,
+                            false
+                    );
+                }
+            }
+
+            /*
+             * Range 0 means vanilla hopper collection.
+             * Only upgraded range hoppers need the
+             * additional entity scan.
+             */
+            if (rangeLevel <= 0) {
                 continue;
             }
 
-            data.setLastTransferTick(currentTick);
+            int range =
+                    plugin.getConfig()
+                            .getInt(
+                                    "range-upgrades."
+                                            + rangeLevel
+                                            + ".range",
+                                    1
+                            );
+
+            int transferTicks =
+                    plugin.getConfig()
+                            .getInt(
+                                    "speed-upgrades."
+                                            + speedLevel
+                                            + ".transfer-ticks",
+                                    8
+                            );
+
+            if (currentTick
+                    - data.getLastTransferTick()
+                    < transferTicks) {
+                continue;
+            }
+
+            data.setLastTransferTick(
+                    currentTick
+            );
 
             collectItems(
                     location,
-                    inventory,
+                    hopper.getInventory(),
                     range
             );
         }
@@ -81,22 +133,25 @@ public class HopperTask extends BukkitRunnable {
     ) {
 
         for (Entity entity :
-                location.getWorld().getNearbyEntities(
-                        location,
-                        range,
-                        range,
-                        range
-                )) {
+                location.getWorld()
+                        .getNearbyEntities(
+                                location,
+                                range,
+                                range,
+                                range
+                        )) {
 
             if (!(entity instanceof Item item)) {
                 continue;
             }
 
-            if (!item.isValid() || item.isDead()) {
+            if (!item.isValid()
+                    || item.isDead()) {
                 continue;
             }
 
-            ItemStack stack = item.getItemStack();
+            ItemStack stack =
+                    item.getItemStack();
 
             if (stack.isEmpty()) {
                 continue;
@@ -106,7 +161,9 @@ public class HopperTask extends BukkitRunnable {
                     inventory.addItem(stack);
 
             if (leftover.isEmpty()) {
+
                 item.remove();
+
                 continue;
             }
 
@@ -115,7 +172,9 @@ public class HopperTask extends BukkitRunnable {
                             .iterator()
                             .next();
 
-            item.setItemStack(remaining);
+            item.setItemStack(
+                    remaining
+            );
         }
     }
 }
