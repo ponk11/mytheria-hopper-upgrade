@@ -8,37 +8,24 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 public class HopperBreakListener implements Listener {
 
-
     private final MytheriaHoppers plugin;
-
 
     public HopperBreakListener(MytheriaHoppers plugin) {
         this.plugin = plugin;
     }
 
-
-
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
 
-
-        if (event.getBlock().getType()
-                != Material.HOPPER) {
-
+        if (event.getBlock().getType() != Material.HOPPER) {
             return;
         }
 
-
         plugin.getHopperManager()
                 .remove(
-                        event.getBlock()
-                                .getLocation()
+                        event.getBlock().getLocation()
                 );
 
-
-        plugin.getDataManager()
-                .save();
-
+        plugin.getDataManager().save();
     }
-
 }
