@@ -2,17 +2,12 @@ package me.mytheria.hoppers.listeners;
 
 import me.mytheria.hoppers.MytheriaHoppers;
 import me.mytheria.hoppers.hopper.HopperData;
-import me.mytheria.hoppers.hopper.HopperKeys;
+import me.mytheria.hoppers.hopper.HopperItem;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Container;
-import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 public class HopperBreakListener implements Listener {
 
@@ -56,37 +51,12 @@ public class HopperBreakListener implements Listener {
 
         event.setDropItems(false);
 
-        ItemStack hopper =
-                new ItemStack(Material.HOPPER);
-
-        ItemMeta meta =
-                hopper.getItemMeta();
-
-        if (meta == null) {
-            return;
-        }
-
-        meta.getPersistentDataContainer().set(
-                HopperKeys.speedLevel(),
-                PersistentDataType.INTEGER,
-                speedLevel
-        );
-
-        meta.getPersistentDataContainer().set(
-                HopperKeys.rangeLevel(),
-                PersistentDataType.INTEGER,
-                rangeLevel
-        );
-
-        meta.setDisplayName(
-                "§dMytheria Hopper"
-        );
-
-        hopper.setItemMeta(meta);
-
         block.getWorld().dropItemNaturally(
                 block.getLocation(),
-                hopper
+                HopperItem.create(
+                        speedLevel,
+                        rangeLevel
+                )
         );
     }
 }
