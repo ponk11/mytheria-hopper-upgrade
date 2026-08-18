@@ -3,6 +3,7 @@ name: Build MytheriaHoppers
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,17 +15,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-
+          cache: maven
 
       - name: Build Plugin
         run: mvn clean package
-
 
       - name: Upload Plugin Jar
         uses: actions/upload-artifact@v4
