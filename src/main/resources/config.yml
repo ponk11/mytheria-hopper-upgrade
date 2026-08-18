@@ -1,17 +1,13 @@
 settings:
-  task-interval: 20
-  max-speed-level: 10
-  max-range-level: 10
+  task-interval: 1
+  max-speed-level: 4
+  max-range-level: 4
 
 gui:
   title: "&d✦ Mytheria Hoppers ✦"
 
 economy:
   provider: VAULT
-
-coinsengine:
-  currency-id: money
-
 
 speed-upgrades:
 
@@ -31,8 +27,6 @@ speed-upgrades:
     transfer-ticks: 2
     cost: 10000
 
-
-
 range-upgrades:
 
   1:
@@ -50,8 +44,6 @@ range-upgrades:
   4:
     range: 8
     cost: 10000
-
-
 
 messages:
 
