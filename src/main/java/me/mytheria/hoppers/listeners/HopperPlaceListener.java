@@ -9,39 +9,26 @@ import org.bukkit.event.block.BlockPlaceEvent;
 
 public class HopperPlaceListener implements Listener {
 
-
     private final MytheriaHoppers plugin;
-
 
     public HopperPlaceListener(MytheriaHoppers plugin) {
         this.plugin = plugin;
     }
 
-
-
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
 
-
-        if (event.getBlock().getType()
-                != Material.HOPPER) {
-
+        if (event.getBlock().getType() != Material.HOPPER) {
             return;
         }
-
 
         plugin.getHopperManager()
                 .getHoppers()
                 .put(
-                        event.getBlock()
-                                .getLocation(),
+                        event.getBlock().getLocation(),
                         new HopperData()
                 );
 
-
-        plugin.getDataManager()
-                .save();
-
+        plugin.getDataManager().save();
     }
-
 }
