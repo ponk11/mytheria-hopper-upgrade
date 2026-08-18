@@ -7,120 +7,53 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class EconomyManager {
 
-
     private final MytheriaHoppers plugin;
 
     private EconomyProvider provider;
 
-
-
     public EconomyManager(MytheriaHoppers plugin) {
-
         this.plugin = plugin;
-
         setup();
-
     }
-
-
 
     private void setup() {
 
-
-        String type =
-                plugin.getConfig()
-                        .getString(
-                                "economy.provider",
-                                "AUTO"
-                        );
-
-
-
-        if (
-                (type.equalsIgnoreCase("AUTO")
-                ||
-                type.equalsIgnoreCase("COINSENGINE"))
-                &&
-                Bukkit.getPluginManager()
-                        .getPlugin("CoinsEngine") != null
-        ) {
-
-
-            provider =
-                    new CoinsEngineEconomy(
-                            plugin.getConfig()
-                                    .getString(
-                                            "coinsengine.currency-id",
-                                            "coins"
-                                    )
-                    );
-
-
-            plugin.getLogger()
-                    .info(
-                            "Using CoinsEngine economy."
-                    );
-
-
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            plugin.getLogger().warning(
+                    "Vault was not found. Economy upgrades are disabled."
+            );
             return;
-
         }
 
+        RegisteredServiceProvider<Economy> registration =
+                Bukkit.getServicesManager()
+                        .getRegistration(Economy.class);
 
-
-        if (
-                (type.equalsIgnoreCase("AUTO")
-                ||
-                type.equalsIgnoreCase("VAULT"))
-                &&
-                Bukkit.getPluginManager()
-                        .getPlugin("Vault") != null
-        ) {
-
-
-            RegisteredServiceProvider<Economy> rsp =
-                    Bukkit.getServicesManager()
-                            .getRegistration(
-                                    Economy.class
-                            );
-
-
-            if (rsp != null) {
-
-
-                provider =
-                        new VaultEconomy(
-                                rsp.getProvider()
-                        );
-
-
-                plugin.getLogger()
-                        .info(
-                                "Using Vault economy."
-                        );
-
-
-                return;
-
-            }
-
+        if (registration == null) {
+            plugin.getLogger().warning(
+                    "No Vault economy provider was found."
+            );
+            return;
         }
 
+        Economy economy = registration.getProvider();
 
+        if (economy == null) {
+            plugin.getLogger().warning(
+                    "Vault returned no economy provider."
+            );
+            return;
+        }
 
-        plugin.getLogger()
-                .warning(
-                        "No economy provider found. Upgrades disabled."
-                );
+        provider = new VaultEconomy(economy);
 
+        plugin.getLogger().info(
+                "Economy hooked through Vault: "
+                        + economy.getName()
+        );
     }
-
-
 
     public EconomyProvider getProvider() {
-
         return provider;
-
     }
-
 }
