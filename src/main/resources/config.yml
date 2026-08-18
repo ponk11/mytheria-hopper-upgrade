@@ -7,10 +7,10 @@ gui:
   title: "&d✦ Mytheria Hoppers ✦"
 
 economy:
-  provider: AUTO
+  provider: VAULT
 
 coinsengine:
-  currency-id: coins
+  currency-id: money
 
 
 speed-upgrades:
