@@ -1,0 +1,26 @@
+name: MytheriaHoppers
+version: 1.0.0
+main: me.mytheria.hoppers.MytheriaHoppers
+api-version: '1.21'
+
+softdepend:
+  - Vault
+  - CoinsEngine
+
+commands:
+  mytheriahoppers:
+    aliases:
+      - mh
+
+permissions:
+  mytheriahoppers.use:
+    default: true
+
+  mytheriahoppers.admin:
+    default: op
+
+  mytheriahoppers.admin.reload:
+    default: op
+
+  mytheriahoppers.admin.bypass:
+    default: op

@@ -1,0 +1,44 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< me.mytheria:mytheria-hopper-upgrade >-----------------
+[INFO] Building mytheria-hopper-upgrade 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from jitpack: https://jitpack.io/io/papermc/paper/paper-api/1.21.8-R0.1-SNAPSHOT/maven-metadata.xml
+Downloading from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.8-R0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 0.4/2.4 kBProgress (1): 1.7/2.4 kBProgress (1): 2.4 kB                        Downloaded from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.8-R0.1-SNAPSHOT/maven-metadata.xml (2.4 kB at 4.4 kB/s)
+Downloading from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
+Downloading from jitpack: https://jitpack.io/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
+Downloading from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 0.4/1.4 kBProgress (1): 1.4 kB                        Downloaded from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 28 kB/s)
+Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 6.0 kB/s)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ mytheria-hopper-upgrade ---
+[INFO] Deleting /workspaces/mytheria-hopper-upgrade/target
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ mytheria-hopper-upgrade ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ mytheria-hopper-upgrade ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 20 source files with javac [debug release 21] to target/classes
+[INFO] /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/commands/HopperCommand.java: Some input files use or override a deprecated API.
+[INFO] /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/commands/HopperCommand.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ mytheria-hopper-upgrade ---
+[INFO] skip non existing resourceDirectory /workspaces/mytheria-hopper-upgrade/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ mytheria-hopper-upgrade ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mytheria-hopper-upgrade ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ mytheria-hopper-upgrade ---
+[INFO] Building jar: /workspaces/mytheria-hopper-upgrade/target/mytheria-hopper-upgrade-1.0.0.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.198 s
+[INFO] Finished at: 2026-08-21T23:59:16Z
+[INFO] ------------------------------------------------------------------------
