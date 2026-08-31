@@ -1,13 +1,15 @@
 package me.mytheria.hoppers.listeners;
 
-import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.hopper.HopperData;
-import me.mytheria.hoppers.hopper.HopperItem;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+
+import me.mytheria.hoppers.MytheriaHoppers;
+import me.mytheria.hoppers.hopper.HopperData;
+import me.mytheria.hoppers.hopper.HopperItem;
 
 public class HopperBreakListener implements Listener {
 
@@ -17,7 +19,7 @@ public class HopperBreakListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBreak(BlockBreakEvent event) {
 
         Block block = event.getBlock();
@@ -43,7 +45,7 @@ public class HopperBreakListener implements Listener {
         plugin.getHopperManager()
                 .remove(block.getLocation());
 
-        plugin.getDataManager().save();
+        plugin.getHopperManager().saveData();
 
         if (speedLevel <= 0 && rangeLevel <= 0) {
             return;
