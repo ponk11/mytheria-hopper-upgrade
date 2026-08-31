@@ -3,14 +3,11 @@ package me.mytheria.hoppers.listeners;
 import me.mytheria.hoppers.MytheriaHoppers;
 import me.mytheria.hoppers.gui.HopperGUI;
 import me.mytheria.hoppers.hopper.HopperData;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
 
 public class GUIListener implements Listener {
 
@@ -22,87 +19,62 @@ public class GUIListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
-            return;
-        }
+        if (event.getClickedInventory() == null) return;
 
         String title = event.getView().getTitle();
-
-        // Check if interacting with the main Hopper GUI
-        if (title.equals(ChatColor.DARK_GRAY + "Hopper Upgrades")) {
+        if (title != null && (title.contains("Hopper") || title.contains("Upgrade") || title.contains("Filter"))) {
+            // Cancel event to prevent players from taking/moving items in the GUI
             event.setCancelled(true);
 
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) {
-                return;
-            }
-
-            int slot = event.getSlot();
-
-            switch (slot) {
-                case 11 -> { // Speed Upgrade
-                    if (!player.hasPermission("mytheriahoppers.upgrade.speed")) {
-                        player.sendMessage(ChatColor.RED + "You do not have permission to upgrade hopper speed!");
-                        return;
-                    }
-                    // Speed upgrade purchase logic
-                }
-                case 13 -> { // Range Upgrade
-                    if (!player.hasPermission("mytheriahoppers.upgrade.range")) {
-                        player.sendMessage(ChatColor.RED + "You do not have permission to upgrade hopper range!");
-                        return;
-                    }
-                    // Range upgrade purchase logic
-                }
-                case 15 -> { // Filter Settings
-                    if (!player.hasPermission("mytheriahoppers.filter")) {
-                        player.sendMessage(ChatColor.RED + "You do not have permission to use the hopper filter!");
-                        return;
-                    }
-                    // Open the dedicated Filter Management Menu
-                    new HopperGUI(plugin).openFilterGUI(player, player.getLocation());
+            if (event.getWhoClicked() instanceof Player player) {
+                if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta()) {
+                    handleGuiClick(player, event, title);
                 }
             }
-            return;
         }
+    }
 
-        // Check if interacting with the Item Selection Filter GUI
-        if (title.equals(ChatColor.DARK_GRAY + "Item Filter Settings")) {
-            event.setCancelled(true);
+    private void handleGuiClick(Player player, InventoryClickEvent event, String title) {
+        Location hopperLocation = HopperGUI.openHopperLocations.get(player.getUniqueId());
+        if (hopperLocation == null) return;
 
-            Location loc = player.getLocation(); // Dynamic location tracking
-            HopperData data = plugin.getHopperManager().getData(loc);
+        HopperData data = plugin.getHopperManager().getData(hopperLocation);
+        if (data == null) return;
 
-            int slot = event.getSlot();
+        int slot = event.getRawSlot();
 
-            // Toggle overall filter status button (Slot 26)
-            if (slot == 26) {
-                data.setFilterEnabled(!data.isFilterEnabled());
-                player.sendMessage(ChatColor.GREEN + "Filter status set to: " + 
-                        (data.isFilterEnabled() ? "Enabled" : "Disabled"));
-                new HopperGUI(plugin).openFilterGUI(player, loc);
-                return;
+        // Handle Hopper Upgrades GUI
+        if (title.contains("Hopper Upgrades")) {
+            if (slot == 11) {
+                // Speed Upgrade
+                if (plugin.getUpgradeManager().upgradeSpeed(player, data)) {
+                    player.sendMessage("§aSpeed upgrade successful!");
+                } else {
+                    player.sendMessage("§cFailed to upgrade speed. Check cost or max level.");
+                }
+                plugin.getHopperGUI().openGUI(player, hopperLocation);
+            } else if (slot == 13) {
+                // Range Upgrade
+                if (plugin.getUpgradeManager().upgradeRange(player, data)) {
+                    player.sendMessage("§aRange upgrade successful!");
+                } else {
+                    player.sendMessage("§cFailed to upgrade range. Check cost or max level.");
+                }
+                plugin.getHopperGUI().openGUI(player, hopperLocation);
+            } else if (slot == 15) {
+                // Filter Settings
+                plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
             }
-
-            // Target top inventory (Filter Menu slots 0-17)
-            if (event.getRawSlot() < 18) {
-                ItemStack current = event.getCurrentItem();
-
-                // UNSELECT ITEM: If a filter item exists in the slot, remove it
-                if (current != null && current.getType() != Material.AIR && current.getType() != Material.GRAY_STAINED_GLASS_PANE) {
-                    data.removeFilterMaterial(current.getType());
-                    player.sendMessage(ChatColor.RED + "Removed " + current.getType().name() + " from filter.");
-                    new HopperGUI(plugin).openFilterGUI(player, loc);
-                    return;
-                }
-
-                // SELECT ITEM: If cursor holds an item, select it for filtering
-                ItemStack cursor = event.getCursor();
-                if (cursor != null && cursor.getType() != Material.AIR) {
-                    data.addFilterMaterial(cursor.getType());
-                    player.sendMessage(ChatColor.GREEN + "Added " + cursor.getType().name() + " to filter.");
-                    new HopperGUI(plugin).openFilterGUI(player, loc);
-                }
+        }
+        // Handle Filter GUI
+        else if (title.contains("Item Filter Settings")) {
+            if (slot == 26) {
+                // Toggle filter
+                data.setFilterEnabled(!data.isFilterEnabled());
+                plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
+            } else if (slot < 18) {
+                // Remove item from filter
+                plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
             }
         }
     }

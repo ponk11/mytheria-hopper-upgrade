@@ -12,37 +12,52 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class HopperGUI {
 
     private final MytheriaHoppers plugin;
+    public static final Map<UUID, Location> openHopperLocations = new HashMap<>();
 
     public HopperGUI(MytheriaHoppers plugin) {
         this.plugin = plugin;
     }
 
     public void openGUI(Player player, Location location) {
+        openHopperLocations.put(player.getUniqueId(), location);
+
         Inventory gui = Bukkit.createInventory(null, 27, ChatColor.DARK_GRAY + "Hopper Upgrades");
         HopperData data = plugin.getHopperManager().getData(location);
 
-        // Speed Upgrade Item (Slot 11)
+        int nextSpeedLevel = data.getSpeedLevel() + 1;
+        double speedCost = plugin.getConfig().getDouble("speed-upgrades." + nextSpeedLevel + ".cost", -1);
+        String speedCostText = speedCost > 0 ? "$" + speedCost : "MAX";
+
         ItemStack speedItem = createGuiItem(
                 Material.SUGAR,
                 ChatColor.GREEN + "Speed Upgrade",
-                ChatColor.GRAY + "Current Level: " + ChatColor.YELLOW + data.getSpeedLevel()
+                ChatColor.GRAY + "Current Level: " + ChatColor.YELLOW + data.getSpeedLevel(),
+                ChatColor.GRAY + "Next Level Cost: " + ChatColor.GOLD + speedCostText,
+                ChatColor.YELLOW + "Click to upgrade!"
         );
         gui.setItem(11, speedItem);
 
-        // Range Upgrade Item (Slot 13)
+        int nextRangeLevel = data.getRangeLevel() + 1;
+        double rangeCost = plugin.getConfig().getDouble("range-upgrades." + nextRangeLevel + ".cost", -1);
+        String rangeCostText = rangeCost > 0 ? "$" + rangeCost : "MAX";
+
         ItemStack rangeItem = createGuiItem(
                 Material.COMPASS,
                 ChatColor.AQUA + "Range Upgrade",
-                ChatColor.GRAY + "Current Level: " + ChatColor.YELLOW + data.getRangeLevel()
+                ChatColor.GRAY + "Current Level: " + ChatColor.YELLOW + data.getRangeLevel(),
+                ChatColor.GRAY + "Next Level Cost: " + ChatColor.GOLD + rangeCostText,
+                ChatColor.YELLOW + "Click to upgrade!"
         );
         gui.setItem(13, rangeItem);
 
-        // Filter Settings Item (Slot 15)
         String filterStatus = data.isFilterEnabled() ? ChatColor.GREEN + "Enabled" : ChatColor.RED + "Disabled";
         ItemStack filterItem = createGuiItem(
                 Material.HOPPER,
@@ -56,6 +71,8 @@ public class HopperGUI {
     }
 
     public void openFilterGUI(Player player, Location location) {
+        openHopperLocations.put(player.getUniqueId(), location);
+
         Inventory gui = Bukkit.createInventory(null, 27, ChatColor.DARK_GRAY + "Item Filter Settings");
         HopperData data = plugin.getHopperManager().getData(location);
 
@@ -70,12 +87,14 @@ public class HopperGUI {
             gui.setItem(slot++, item);
         }
 
-        // Toggle Status Button (Slot 26)
+        double unlockCost = plugin.getConfig().getDouble("filter-unlock-cost", 1000.0);
         String statusText = data.isFilterEnabled() ? ChatColor.GREEN + "Filter: ENABLED" : ChatColor.RED + "Filter: DISABLED";
+        String toggleLore = data.isFilterEnabled() ? ChatColor.YELLOW + "Click to disable filter" : ChatColor.YELLOW + "Click to unlock ($" + unlockCost + ")";
+
         ItemStack toggleItem = createGuiItem(
                 data.isFilterEnabled() ? Material.LIME_DYE : Material.GRAY_DYE,
                 statusText,
-                ChatColor.YELLOW + "Click to toggle filter on/off"
+                toggleLore
         );
         gui.setItem(26, toggleItem);
 

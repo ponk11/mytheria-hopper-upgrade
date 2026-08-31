@@ -25,10 +25,13 @@ public class HopperInteractListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
-        Action action = event.getAction();
-        
-        // Listen for Right-Click or Shift + Left-Click
-        if (action != Action.RIGHT_CLICK_BLOCK && action != Action.LEFT_CLICK_BLOCK) {
+        // ONLY trigger on Shift + Left-Click
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        if (!player.isSneaking()) {
             return;
         }
 
@@ -37,13 +40,10 @@ public class HopperInteractListener implements Listener {
             return;
         }
 
-        Player player = event.getPlayer();
-
         // SuperiorSkyblock Protection Check
         if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
             Island island = SuperiorSkyblockAPI.getIslandAt(block.getLocation());
             if (island != null) {
-                // If the player is not an island member or admin, block access
                 if (!island.isMember(SuperiorSkyblockAPI.getPlayer(player)) && !player.hasPermission("mytheriahoppers.admin")) {
                     player.sendMessage(ChatColor.RED + "You cannot interact with hoppers on someone else's island!");
                     event.setCancelled(true);
@@ -56,10 +56,7 @@ public class HopperInteractListener implements Listener {
             return;
         }
 
-        // Handle opening the Hopper Upgrade GUI on Right-Click (or Shift-Left Click)
-        if (action == Action.RIGHT_CLICK_BLOCK || (action == Action.LEFT_CLICK_BLOCK && player.isSneaking())) {
-            event.setCancelled(true);
-            new HopperGUI(plugin).openGUI(player, block.getLocation());
-        }
+        event.setCancelled(true);
+        new HopperGUI(plugin).openGUI(player, block.getLocation());
     }
 }

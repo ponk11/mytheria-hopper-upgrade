@@ -1,125 +1,98 @@
 package me.mytheria.hoppers;
 
-import me.mytheria.hoppers.commands.HopperCommand;
-import me.mytheria.hoppers.economy.EconomyManager;
-import me.mytheria.hoppers.gui.UpgradeManager;
-import me.mytheria.hoppers.hopper.HopperManager;
-import me.mytheria.hoppers.hopper.HopperTask;
-import me.mytheria.hoppers.listeners.GUIListener;
-import me.mytheria.hoppers.listeners.HopperBreakListener;
-import me.mytheria.hoppers.listeners.HopperInteractListener;
-import me.mytheria.hoppers.listeners.HopperPlaceListener;
-import me.mytheria.hoppers.storage.DataManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.mytheria.hoppers.economy.EconomyManager;
+import me.mytheria.hoppers.economy.VaultEconomyProvider;
+import me.mytheria.hoppers.gui.HopperGUI;
+import me.mytheria.hoppers.gui.UpgradeManager;
+import me.mytheria.hoppers.listeners.GUIListener;
+import me.mytheria.hoppers.listeners.HopperBlockListener;
+import me.mytheria.hoppers.listeners.HopperInteractListener;
+import me.mytheria.hoppers.managers.HopperManager;
+import me.mytheria.hoppers.storage.DataManager;
+import net.milkbowl.vault.economy.Economy;
 
 public class MytheriaHoppers extends JavaPlugin {
 
     private static MytheriaHoppers instance;
-
-    private HopperManager hopperManager;
+    private Economy economy;
     private EconomyManager economyManager;
-    private UpgradeManager upgradeManager;
+    private HopperManager hopperManager;
     private DataManager dataManager;
+    private UpgradeManager upgradeManager;
+    private HopperGUI hopperGUI;
 
     @Override
     public void onEnable() {
-
         instance = this;
-
         saveDefaultConfig();
 
-        dataManager = new DataManager(this);
-
-        hopperManager = new HopperManager(this);
-
-        dataManager.load();
-
-        economyManager = new EconomyManager(this);
-
-        upgradeManager = new UpgradeManager(this);
-
-        getServer()
-                .getPluginManager()
-                .registerEvents(
-                        new HopperInteractListener(this),
-                        this
-                );
-
-        getServer()
-                .getPluginManager()
-                .registerEvents(
-                        new GUIListener(this),
-                        this
-                );
-
-        getServer()
-                .getPluginManager()
-                .registerEvents(
-                        new HopperPlaceListener(this),
-                        this
-                );
-
-        getServer()
-                .getPluginManager()
-                .registerEvents(
-                        new HopperBreakListener(this),
-                        this
-                );
-
-        if (getCommand("mytheriahoppers") != null) {
-            getCommand("mytheriahoppers")
-                    .setExecutor(
-                            new HopperCommand(this)
-                    );
+        if (!setupEconomy()) {
+            getLogger().warning("Vault economy not found! Economy-based upgrades will be disabled.");
         }
 
-        /*
-         * Run the hopper task every server tick.
-         *
-         * Each hopper controls its own transfer speed
-         * using the transfer-ticks value from config.yml.
-         */
-        new HopperTask(this)
-                .runTaskTimer(
-                        this,
-                        1L,
-                        1L
-                );
+        this.hopperManager = new HopperManager(this);
+        this.dataManager = new DataManager(this);
+        this.upgradeManager = new UpgradeManager(this);
+        this.hopperGUI = new HopperGUI(this);
 
-        getLogger().info(
-                "Mytheria Hoppers enabled!"
-        );
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+        getServer().getPluginManager().registerEvents(new HopperInteractListener(this), this);
+        getServer().getPluginManager().registerEvents(new HopperBlockListener(this), this);
+
+        getLogger().info("MytheriaHoppers enabled successfully!");
     }
 
     @Override
     public void onDisable() {
-
-        if (dataManager != null) {
-            dataManager.save();
+        if (hopperManager != null) {
+            hopperManager.saveData();
         }
+        getLogger().info("MytheriaHoppers data saved successfully!");
+    }
 
-        getLogger().info(
-                "Mytheria Hoppers disabled!"
-        );
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        economy = rsp.getProvider();
+        
+        this.economyManager = new EconomyManager(new VaultEconomyProvider(economy));
+
+        return economy != null;
     }
 
     public static MytheriaHoppers getInstance() {
         return instance;
     }
 
-    public HopperManager getHopperManager() {
-        return hopperManager;
+    public Economy getEconomy() {
+        return economy;
     }
 
     public EconomyManager getEconomyManager() {
         return economyManager;
     }
 
-    public UpgradeManager getUpgradeManager() {
-        return upgradeManager;
+    public HopperManager getHopperManager() {
+        return hopperManager;
     }
 
     public DataManager getDataManager() {
         return dataManager;
+    }
+
+    public UpgradeManager getUpgradeManager() {
+        return upgradeManager;
+    }
+
+    public HopperGUI getHopperGUI() {
+        return hopperGUI;
     }
 }
