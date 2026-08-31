@@ -21,15 +21,9 @@ public class HopperTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        int currentTick = plugin.getServer().getCurrentTick();
 
-        int currentTick =
-                plugin.getServer().getCurrentTick();
-
-        for (Map.Entry<Location, HopperData> entry :
-                plugin.getHopperManager()
-                        .getHoppers()
-                        .entrySet()) {
-
+        for (Map.Entry<Location, HopperData> entry : plugin.getHopperManager().getHoppers().entrySet()) {
             Location location = entry.getKey();
             HopperData data = entry.getValue();
 
@@ -37,113 +31,64 @@ public class HopperTask extends BukkitRunnable {
                 continue;
             }
 
-            if (location.getBlock().getType()
-                    != Material.HOPPER) {
+            if (location.getBlock().getType() != Material.HOPPER) {
                 continue;
             }
 
-            int rangeLevel =
-                    data.getRangeLevel();
+            int speedLevel = data.getSpeedLevel();
+            int transferTicks = plugin.getConfig().getInt(
+                    "speed-upgrades." + speedLevel + ".transfer-ticks",
+                    8
+            );
 
-            if (rangeLevel <= 0) {
-                continue;
-            }
-
-            int speedLevel =
-                    data.getSpeedLevel();
-
-            int transferTicks =
-                    plugin.getConfig()
-                            .getInt(
-                                    "speed-upgrades."
-                                            + speedLevel
-                                            + ".transfer-ticks",
-                                    8
-                            );
-
-            if (speedLevel <= 0) {
-                transferTicks = 8;
-            }
-
-            if (currentTick
-                    - data.getLastTransferTick()
-                    < transferTicks) {
+            if (currentTick - data.getLastTransferTick() < transferTicks) {
                 continue;
             }
 
             data.setLastTransferTick(currentTick);
 
-            int range =
-                    plugin.getConfig()
-                            .getInt(
-                                    "range-upgrades."
-                                            + rangeLevel
-                                            + ".range",
-                                    1
-                            );
+            int rangeLevel = data.getRangeLevel();
+            int range = 1;
+            if (rangeLevel > 0) {
+                range = plugin.getConfig().getInt(
+                        "range-upgrades." + rangeLevel + ".range",
+                        1
+                );
+            }
 
-            collectItems(
-                    location,
-                    range
-            );
+            collectItems(location, range);
         }
     }
 
-    private void collectItems(
-            Location location,
-            int range
-    ) {
-
+    private void collectItems(Location location, int range) {
         if (location.getWorld() == null) {
             return;
         }
 
-        Inventory inventory =
-                ((org.bukkit.block.Hopper)
-                        location.getBlock()
-                                .getState())
-                        .getInventory();
+        Inventory inventory = ((org.bukkit.block.Hopper) location.getBlock().getState()).getInventory();
 
-        for (Entity entity :
-                location.getWorld()
-                        .getNearbyEntities(
-                                location,
-                                range,
-                                range,
-                                range
-                        )) {
-
+        for (Entity entity : location.getWorld().getNearbyEntities(location, range, range, range)) {
             if (!(entity instanceof Item item)) {
                 continue;
             }
 
-            if (!item.isValid()
-                    || item.isDead()) {
+            if (!item.isValid() || item.isDead()) {
                 continue;
             }
 
-            ItemStack stack =
-                    item.getItemStack();
-
+            ItemStack stack = item.getItemStack();
             if (stack.isEmpty()) {
                 continue;
             }
 
-            Map<Integer, ItemStack> leftover =
-                    inventory.addItem(stack);
+            Map<Integer, ItemStack> leftover = inventory.addItem(stack);
 
             if (leftover.isEmpty()) {
-
                 item.remove();
-
                 continue;
             }
 
-            ItemStack remaining =
-                    leftover.values()
-                            .iterator()
-                            .next();
-
+            ItemStack remaining = leftover.values().iterator().next();
             item.setItemStack(remaining);
         }
     }
