@@ -18,45 +18,30 @@ public class GUIListener implements Listener {
     }
 
     @EventHandler
-    public void onClick(
-            InventoryClickEvent event
-    ) {
-
-        if (!(event.getInventory().getHolder()
-                instanceof HopperHolder holder)) {
+    public void onClick(InventoryClickEvent event) {
+        // Ensure the inventory holder is our custom HopperHolder
+        if (!(event.getInventory().getHolder() instanceof HopperHolder holder)) {
             return;
         }
 
         event.setCancelled(true);
 
-        if (!(event.getWhoClicked()
-                instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
 
-        if (!player.hasPermission(
-                "mytheriahoppers.use"
-        )) {
+        if (!player.hasPermission("mytheriahoppers.use")) {
             player.closeInventory();
-
-            player.sendMessage(
-                    color(
-                            plugin.getConfig()
-                                    .getString(
-                                            "messages.no-permission",
-                                            "&cYou do not have permission."
-                                    )
+            player.sendMessage(color(
+                    plugin.getConfig().getString(
+                            "messages.no-permission",
+                            "&cYou do not have permission."
                     )
-            );
-
+            ));
             return;
         }
 
-        HopperData data =
-                plugin.getHopperManager()
-                        .getData(
-                                holder.getLocation()
-                        );
+        HopperData data = plugin.getHopperManager().getData(holder.getLocation());
 
         if (data == null) {
             player.closeInventory();
@@ -64,142 +49,74 @@ public class GUIListener implements Listener {
         }
 
         switch (event.getSlot()) {
-
-            case 11 -> {
-
-                int max =
-                        plugin.getConfig()
-                                .getInt(
-                                        "settings.max-speed-level",
-                                        4
-                                );
-
-                if (data.getSpeedLevel() >= max) {
-
-                    player.sendMessage(
-                            color(
-                                    plugin.getConfig()
-                                            .getString(
-                                                    "messages.max-level",
-                                                    "&cThis upgrade is already maxed!"
-                                            )
-                            )
-                    );
-
-                    return;
-                }
-
-                boolean upgraded =
-                        plugin.getUpgradeManager()
-                                .upgradeSpeed(
-                                        player,
-                                        data
-                                );
-
-                if (upgraded) {
-
-                    plugin.getDataManager()
-                            .save();
-
-                    player.sendMessage(
-                            color(
-                                    plugin.getConfig()
-                                            .getString(
-                                                    "messages.upgraded",
-                                                    "&aUpgrade purchased!"
-                                            )
-                            )
-                    );
-
-                    player.closeInventory();
-
-                } else {
-
-                    player.sendMessage(
-                            color(
-                                    plugin.getConfig()
-                                            .getString(
-                                                    "messages.not-enough-money",
-                                                    "&cYou do not have enough money."
-                                            )
-                            )
-                    );
-                }
-            }
-
-            case 15 -> {
-
-                int max =
-                        plugin.getConfig()
-                                .getInt(
-                                        "settings.max-range-level",
-                                        4
-                                );
-
-                if (data.getRangeLevel() >= max) {
-
-                    player.sendMessage(
-                            color(
-                                    plugin.getConfig()
-                                            .getString(
-                                                    "messages.max-level",
-                                                    "&cThis upgrade is already maxed!"
-                                            )
-                            )
-                    );
-
-                    return;
-                }
-
-                boolean upgraded =
-                        plugin.getUpgradeManager()
-                                .upgradeRange(
-                                        player,
-                                        data
-                                );
-
-                if (upgraded) {
-
-                    plugin.getDataManager()
-                            .save();
-
-                    player.sendMessage(
-                            color(
-                                    plugin.getConfig()
-                                            .getString(
-                                                    "messages.upgraded",
-                                                    "&aUpgrade purchased!"
-                                            )
-                            )
-                    );
-
-                    player.closeInventory();
-
-                } else {
-
-                    player.sendMessage(
-                            color(
-                                    plugin.getConfig()
-                                            .getString(
-                                                    "messages.not-enough-money",
-                                                    "&cYou do not have enough money."
-                                            )
-                            )
-                    );
-                }
-            }
-
-            default -> {
-            }
+            case 11 -> handleSpeedUpgrade(player, data);
+            case 15 -> handleRangeUpgrade(player, data);
+            default -> { }
         }
     }
 
+    private void handleSpeedUpgrade(Player player, HopperData data) {
+        int max = plugin.getConfig().getInt("settings.max-speed-level", 4);
+
+        if (data.getSpeedLevel() >= max) {
+            player.sendMessage(color(
+                    plugin.getConfig().getString(
+                            "messages.max-level",
+                            "&cThis upgrade is already maxed!"
+                    )
+            ));
+            return;
+        }
+
+        boolean upgraded = plugin.getUpgradeManager().upgradeSpeed(player, data);
+        processUpgradeResult(player, upgraded);
+    }
+
+    private void handleRangeUpgrade(Player player, HopperData data) {
+        int max = plugin.getConfig().getInt("settings.max-range-level", 4);
+
+        if (data.getRangeLevel() >= max) {
+            player.sendMessage(color(
+                    plugin.getConfig().getString(
+                            "messages.max-level",
+                            "&cThis upgrade is already maxed!"
+                    )
+            ));
+            return;
+        }
+
+        boolean upgraded = plugin.getUpgradeManager().upgradeRange(player, data);
+        processUpgradeResult(player, upgraded);
+    }
+
+    private void processUpgradeResult(Player player, boolean upgraded) {
+        if (upgraded) {
+            plugin.getDataManager().save();
+            player.sendMessage(color(
+                    plugin.getConfig().getString(
+                            "messages.upgraded",
+                            "&aUpgrade purchased!"
+                    )
+            ));
+            player.closeInventory();
+        } else {
+            player.sendMessage(color(
+                    plugin.getConfig().getString(
+                            "messages.not-enough-money",
+                            "&cYou do not have enough money."
+                    )
+            ));
+        }
+    }
+
+    /**
+     * Translates color codes safely handling null inputs.
+     */
     @SuppressWarnings("deprecation")
     private String color(String text) {
-
-        return ChatColor.translateAlternateColorCodes(
-                '&',
-                text
-        );
+        if (text == null) {
+            return "";
+        }
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
 }
