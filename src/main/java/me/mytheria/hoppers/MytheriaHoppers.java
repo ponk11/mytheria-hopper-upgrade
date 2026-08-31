@@ -10,6 +10,7 @@ import me.mytheria.hoppers.gui.UpgradeManager;
 import me.mytheria.hoppers.hopper.HopperTask;
 import me.mytheria.hoppers.listeners.GUIListener;
 import me.mytheria.hoppers.listeners.HopperBlockListener;
+import me.mytheria.hoppers.listeners.HopperBreakListener;
 import me.mytheria.hoppers.listeners.HopperInteractListener;
 import me.mytheria.hoppers.managers.HopperManager;
 import me.mytheria.hoppers.storage.DataManager;
@@ -42,6 +43,7 @@ public class MytheriaHoppers extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
         getServer().getPluginManager().registerEvents(new HopperInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new HopperBlockListener(this), this);
+        getServer().getPluginManager().registerEvents(new HopperBreakListener(this), this);
 
         // Schedule the hopper task to run every tick
         new HopperTask(this).runTaskTimer(this, 0L, 1L);
