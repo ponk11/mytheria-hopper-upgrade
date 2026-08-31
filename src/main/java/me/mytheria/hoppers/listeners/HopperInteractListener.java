@@ -1,11 +1,16 @@
 package me.mytheria.hoppers.listeners;
 
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.superiorskyblock.api.island.Island;
 import me.mytheria.hoppers.MytheriaHoppers;
 import me.mytheria.hoppers.gui.HopperGUI;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -18,61 +23,43 @@ public class HopperInteractListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
-
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
+        Action action = event.getAction();
+        
+        // Listen for Right-Click or Shift + Left-Click
+        if (action != Action.RIGHT_CLICK_BLOCK && action != Action.LEFT_CLICK_BLOCK) {
             return;
         }
 
-        if (!event.getPlayer().isSneaking()) {
+        Block block = event.getClickedBlock();
+        if (block == null || block.getType() != Material.HOPPER) {
             return;
         }
 
-        if (event.getClickedBlock() == null) {
+        Player player = event.getPlayer();
+
+        // SuperiorSkyblock Protection Check
+        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
+            Island island = SuperiorSkyblockAPI.getIslandAt(block.getLocation());
+            if (island != null) {
+                // If the player is not an island member or admin, block access
+                if (!island.isMember(SuperiorSkyblockAPI.getPlayer(player)) && !player.hasPermission("mytheriahoppers.admin")) {
+                    player.sendMessage(ChatColor.RED + "You cannot interact with hoppers on someone else's island!");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
+        if (!player.hasPermission("mytheriahoppers.use")) {
             return;
         }
 
-        if (event.getClickedBlock().getType()
-                != Material.HOPPER) {
-            return;
+        // Handle opening the Hopper Upgrade GUI on Right-Click (or Shift-Left Click)
+        if (action == Action.RIGHT_CLICK_BLOCK || (action == Action.LEFT_CLICK_BLOCK && player.isSneaking())) {
+            event.setCancelled(true);
+            new HopperGUI(plugin).openGUI(player, block.getLocation());
         }
-
-        Player player =
-                event.getPlayer();
-
-        event.setCancelled(true);
-
-        if (!player.hasPermission(
-                "mytheriahoppers.use"
-        )) {
-
-            player.sendMessage(
-                    color(
-                            plugin.getConfig()
-                                    .getString(
-                                            "messages.no-permission",
-                                            "&cYou do not have permission."
-                                    )
-                    )
-            );
-
-            return;
-        }
-
-        new HopperGUI(
-                plugin,
-                event.getClickedBlock()
-                        .getLocation()
-        ).open(player);
-    }
-
-    @SuppressWarnings("deprecation")
-    private String color(String text) {
-
-        return ChatColor.translateAlternateColorCodes(
-                '&',
-                text
-        );
     }
 }

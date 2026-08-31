@@ -1,13 +1,16 @@
 package me.mytheria.hoppers.listeners;
 
 import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.gui.HopperHolder;
+import me.mytheria.hoppers.gui.HopperGUI;
 import me.mytheria.hoppers.hopper.HopperData;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class GUIListener implements Listener {
 
@@ -18,105 +21,89 @@ public class GUIListener implements Listener {
     }
 
     @EventHandler
-    public void onClick(InventoryClickEvent event) {
-        // Ensure the inventory holder is our custom HopperHolder
-        if (!(event.getInventory().getHolder() instanceof HopperHolder holder)) {
-            return;
-        }
-
-        event.setCancelled(true);
-
+    public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
 
-        if (!player.hasPermission("mytheriahoppers.use")) {
-            player.closeInventory();
-            player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            "messages.no-permission",
-                            "&cYou do not have permission."
-                    )
-            ));
+        String title = event.getView().getTitle();
+
+        // Check if interacting with the main Hopper GUI
+        if (title.equals(ChatColor.DARK_GRAY + "Hopper Upgrades")) {
+            event.setCancelled(true);
+
+            ItemStack clickedItem = event.getCurrentItem();
+            if (clickedItem == null || clickedItem.getType() == Material.AIR) {
+                return;
+            }
+
+            int slot = event.getSlot();
+
+            switch (slot) {
+                case 11 -> { // Speed Upgrade
+                    if (!player.hasPermission("mytheriahoppers.upgrade.speed")) {
+                        player.sendMessage(ChatColor.RED + "You do not have permission to upgrade hopper speed!");
+                        return;
+                    }
+                    // Speed upgrade purchase logic
+                }
+                case 13 -> { // Range Upgrade
+                    if (!player.hasPermission("mytheriahoppers.upgrade.range")) {
+                        player.sendMessage(ChatColor.RED + "You do not have permission to upgrade hopper range!");
+                        return;
+                    }
+                    // Range upgrade purchase logic
+                }
+                case 15 -> { // Filter Settings
+                    if (!player.hasPermission("mytheriahoppers.filter")) {
+                        player.sendMessage(ChatColor.RED + "You do not have permission to use the hopper filter!");
+                        return;
+                    }
+                    // Open the dedicated Filter Management Menu
+                    new HopperGUI(plugin).openFilterGUI(player, player.getLocation());
+                }
+            }
             return;
         }
 
-        HopperData data = plugin.getHopperManager().getData(holder.getLocation());
+        // Check if interacting with the Item Selection Filter GUI
+        if (title.equals(ChatColor.DARK_GRAY + "Item Filter Settings")) {
+            event.setCancelled(true);
 
-        if (data == null) {
-            player.closeInventory();
-            return;
+            Location loc = player.getLocation(); // Dynamic location tracking
+            HopperData data = plugin.getHopperManager().getData(loc);
+
+            int slot = event.getSlot();
+
+            // Toggle overall filter status button (Slot 26)
+            if (slot == 26) {
+                data.setFilterEnabled(!data.isFilterEnabled());
+                player.sendMessage(ChatColor.GREEN + "Filter status set to: " + 
+                        (data.isFilterEnabled() ? "Enabled" : "Disabled"));
+                new HopperGUI(plugin).openFilterGUI(player, loc);
+                return;
+            }
+
+            // Target top inventory (Filter Menu slots 0-17)
+            if (event.getRawSlot() < 18) {
+                ItemStack current = event.getCurrentItem();
+
+                // UNSELECT ITEM: If a filter item exists in the slot, remove it
+                if (current != null && current.getType() != Material.AIR && current.getType() != Material.GRAY_STAINED_GLASS_PANE) {
+                    data.removeFilterMaterial(current.getType());
+                    player.sendMessage(ChatColor.RED + "Removed " + current.getType().name() + " from filter.");
+                    new HopperGUI(plugin).openFilterGUI(player, loc);
+                    return;
+                }
+
+                // SELECT ITEM: If cursor holds an item, select it for filtering
+                ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != Material.AIR) {
+                    data.addFilterMaterial(cursor.getType());
+                    player.sendMessage(ChatColor.GREEN + "Added " + cursor.getType().name() + " to filter.");
+                    new HopperGUI(plugin).openFilterGUI(player, loc);
+                }
+            }
         }
-
-        switch (event.getSlot()) {
-            case 11 -> handleSpeedUpgrade(player, data);
-            case 15 -> handleRangeUpgrade(player, data);
-            default -> { }
-        }
-    }
-
-    private void handleSpeedUpgrade(Player player, HopperData data) {
-        int max = plugin.getConfig().getInt("settings.max-speed-level", 4);
-
-        if (data.getSpeedLevel() >= max) {
-            player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            "messages.max-level",
-                            "&cThis upgrade is already maxed!"
-                    )
-            ));
-            return;
-        }
-
-        boolean upgraded = plugin.getUpgradeManager().upgradeSpeed(player, data);
-        processUpgradeResult(player, upgraded);
-    }
-
-    private void handleRangeUpgrade(Player player, HopperData data) {
-        int max = plugin.getConfig().getInt("settings.max-range-level", 4);
-
-        if (data.getRangeLevel() >= max) {
-            player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            "messages.max-level",
-                            "&cThis upgrade is already maxed!"
-                    )
-            ));
-            return;
-        }
-
-        boolean upgraded = plugin.getUpgradeManager().upgradeRange(player, data);
-        processUpgradeResult(player, upgraded);
-    }
-
-    private void processUpgradeResult(Player player, boolean upgraded) {
-        if (upgraded) {
-            plugin.getDataManager().save();
-            player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            "messages.upgraded",
-                            "&aUpgrade purchased!"
-                    )
-            ));
-            player.closeInventory();
-        } else {
-            player.sendMessage(color(
-                    plugin.getConfig().getString(
-                            "messages.not-enough-money",
-                            "&cYou do not have enough money."
-                    )
-            ));
-        }
-    }
-
-    /**
-     * Translates color codes safely handling null inputs.
-     */
-    @SuppressWarnings("deprecation")
-    private String color(String text) {
-        if (text == null) {
-            return "";
-        }
-        return ChatColor.translateAlternateColorCodes('&', text);
     }
 }

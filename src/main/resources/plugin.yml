@@ -8,6 +8,7 @@ depend:
 
 softdepend:
   - CoinsEngine
+  - SuperiorSkyblock2
 
 commands:
   mytheriahoppers:
@@ -19,6 +20,10 @@ commands:
 permissions:
   mytheriahoppers.use:
     description: Allows players to use Mytheria Hoppers
+    default: true
+
+  mytheriahoppers.filter:
+    description: Allows unlocking and using the hopper item filter feature
     default: true
 
   mytheriahoppers.admin:
