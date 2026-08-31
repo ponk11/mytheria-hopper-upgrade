@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 
 import me.mytheria.hoppers.MytheriaHoppers;
 import me.mytheria.hoppers.gui.HopperGUI;
@@ -24,34 +25,30 @@ public class GUIListener implements Listener {
         if (event.getClickedInventory() == null) return;
 
         String title = event.getView().getTitle();
-        if (title != null && (title.contains("Hopper") || title.contains("Upgrade") || title.contains("Filter"))) {
+        
+        // Check if it's one of our custom GUIs (not a normal hopper inventory)
+        if (title != null && (title.contains("Hopper Upgrades") || title.contains("Item Filter Selection"))) {
             
             if (event.getWhoClicked() instanceof Player player) {
-                // Check if they clicked on the GUI inventory itself
-                if (event.getClickedInventory().equals(event.getInventory())) {
-                    // Cancel event to prevent players from taking/moving items in the GUI
+                // For Hopper Upgrades GUI - handle upgrade buttons
+                if (title.contains("Hopper Upgrades") && event.getClickedInventory().equals(event.getInventory())) {
                     event.setCancelled(true);
-                    
                     if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta()) {
                         handleGuiClick(player, event, title);
                     }
-                } else {
-                    // They clicked on their own inventory - check if they're dragging to filter slots
-                    if (title.contains("Item Filter Selection") && event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
-                        Location hopperLocation = HopperGUI.openHopperLocations.get(player.getUniqueId());
-                        if (hopperLocation != null) {
-                            HopperData data = plugin.getHopperManager().getData(hopperLocation);
-                            if (data != null && data.isFilterUnlocked()) {
-                                int slot = event.getRawSlot();
-                                // Only allow placing items on filter slots (0-17, excluding 13 which is display)
-                                if (slot >= 0 && slot < 18 && slot != 13) {
-                                    event.setCancelled(true);
-                                    data.setSelectedFilterItem(event.getCursor().getType());
-                                    player.sendMessage("§aSelected item: " + event.getCursor().getType().name());
-                                    plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
-                                }
-                            }
+                } 
+                // For Filter Selection GUI
+                else if (title.contains("Item Filter Selection")) {
+                    // If clicking on the GUI itself (filter slots, unlock buttons, etc)
+                    if (event.getClickedInventory().equals(event.getInventory())) {
+                        event.setCancelled(true);
+                        if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta()) {
+                            handleGuiClick(player, event, title);
                         }
+                    }
+                    // If clicking on their inventory while holding an item
+                    else if (event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+                        // Don't cancel - let them pick up the item
                     }
                 }
             }
@@ -92,7 +89,7 @@ public class GUIListener implements Listener {
         }
         // Handle Filter Selection GUI
         else if (title.contains("Item Filter Selection")) {
-            // Slot 13 is the center display slot
+            // Slot 13 is the center display slot (unlock or deselect)
             if (slot == 13) {
                 if (!data.isFilterUnlocked()) {
                     // Unlock filter
@@ -107,6 +104,16 @@ public class GUIListener implements Listener {
                     player.sendMessage("§aItem deselected!");
                 }
                 plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
+            }
+            // Slots 0-17 are for selecting items (if filter is unlocked)
+            else if (data.isFilterUnlocked() && slot >= 0 && slot < 18 && slot != 13) {
+                ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != Material.AIR) {
+                    // Player is placing an item
+                    data.setSelectedFilterItem(cursor.getType());
+                    player.sendMessage("§aSelected item: " + cursor.getType().name());
+                    plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
+                }
             }
             // Slots 18-25 are for unlocking additional slots
             else if (data.isFilterUnlocked() && slot >= 18 && slot <= 25 && data.getUnlockedFilterSlots() < 27) {

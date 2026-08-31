@@ -1,9 +1,5 @@
 package me.mytheria.hoppers.listeners;
 
-import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
-import com.bgsoftware.superiorskyblock.api.island.Island;
-import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.gui.HopperGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -15,6 +11,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.superiorskyblock.api.island.Island;
+
+import me.mytheria.hoppers.MytheriaHoppers;
+
 public class HopperInteractListener implements Listener {
 
     private final MytheriaHoppers plugin;
@@ -25,17 +26,9 @@ public class HopperInteractListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
-        // ONLY trigger on Shift + Left-Click
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
-            return;
-        }
-
         Player player = event.getPlayer();
-        if (!player.isSneaking()) {
-            return;
-        }
-
         Block block = event.getClickedBlock();
+        
         if (block == null || block.getType() != Material.HOPPER) {
             return;
         }
@@ -57,6 +50,14 @@ public class HopperInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        new HopperGUI(plugin).openGUI(player, block.getLocation());
+
+        // Shift + Left-Click = Open Upgrade GUI
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK && player.isSneaking()) {
+            plugin.getHopperGUI().openGUI(player, block.getLocation());
+        }
+        // Right-Click = Open Hopper Inventory
+        else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            player.openInventory(((org.bukkit.block.Hopper) block.getState()).getInventory());
+        }
     }
 }
