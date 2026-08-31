@@ -3,6 +3,7 @@ package me.mytheria.hoppers.hopper;
 import me.mytheria.hoppers.MytheriaHoppers;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
@@ -31,7 +32,12 @@ public class HopperTask extends BukkitRunnable {
                 continue;
             }
 
-            if (location.getBlock().getType() != Material.HOPPER) {
+            Block block = location.getBlock();
+            if (block.getType() != Material.HOPPER) {
+                continue;
+            }
+
+            if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
                 continue;
             }
 
@@ -56,11 +62,16 @@ public class HopperTask extends BukkitRunnable {
                 );
             }
 
-            collectItems(location, range);
+            int amountToTransfer = plugin.getConfig().getInt(
+                    "speed-upgrades." + speedLevel + ".transfer-amount",
+                    1
+            );
+
+            collectItems(location, data, range, amountToTransfer);
         }
     }
 
-    private void collectItems(Location location, int range) {
+    private void collectItems(Location location, HopperData data, int range, int maxAmount) {
         if (location.getWorld() == null) {
             return;
         }
@@ -81,15 +92,27 @@ public class HopperTask extends BukkitRunnable {
                 continue;
             }
 
-            Map<Integer, ItemStack> leftover = inventory.addItem(stack);
-
-            if (leftover.isEmpty()) {
-                item.remove();
+            if (!data.isAllowedByFilter(stack.getType())) {
                 continue;
             }
 
-            ItemStack remaining = leftover.values().iterator().next();
-            item.setItemStack(remaining);
+            int transferCount = Math.min(stack.getAmount(), maxAmount);
+            ItemStack stackToInsert = stack.clone();
+            stackToInsert.setAmount(transferCount);
+
+            Map<Integer, ItemStack> leftover = inventory.addItem(stackToInsert);
+
+            int successfullyAdded = transferCount - (leftover.isEmpty() ? 0 : leftover.values().iterator().next().getAmount());
+
+            if (successfullyAdded > 0) {
+                if (stack.getAmount() <= successfullyAdded) {
+                    item.remove();
+                } else {
+                    stack.setAmount(stack.getAmount() - successfullyAdded);
+                    item.setItemStack(stack);
+                }
+                break;
+            }
         }
     }
 }

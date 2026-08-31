@@ -1,17 +1,16 @@
 package me.mytheria.hoppers.hopper;
 
+import org.bukkit.Material;
+import java.util.HashSet;
+import java.util.Set;
+
 public class HopperData {
 
-    private int speedLevel;
-    private int rangeLevel;
-
-    private long lastTransferTick;
-
-    public HopperData() {
-        this.speedLevel = 0;
-        this.rangeLevel = 0;
-        this.lastTransferTick = 0;
-    }
+    private int speedLevel = 0;
+    private int rangeLevel = 0;
+    private int lastTransferTick = 0;
+    private boolean filterEnabled = false;
+    private final Set<Material> filteredMaterials = new HashSet<>();
 
     public int getSpeedLevel() {
         return speedLevel;
@@ -29,11 +28,38 @@ public class HopperData {
         this.rangeLevel = rangeLevel;
     }
 
-    public long getLastTransferTick() {
+    public int getLastTransferTick() {
         return lastTransferTick;
     }
 
-    public void setLastTransferTick(long lastTransferTick) {
+    public void setLastTransferTick(int lastTransferTick) {
         this.lastTransferTick = lastTransferTick;
+    }
+
+    public boolean isFilterEnabled() {
+        return filterEnabled;
+    }
+
+    public void setFilterEnabled(boolean filterEnabled) {
+        this.filterEnabled = filterEnabled;
+    }
+
+    public Set<Material> getFilteredMaterials() {
+        return filteredMaterials;
+    }
+
+    public boolean isAllowedByFilter(Material material) {
+        if (!filterEnabled) {
+            return true;
+        }
+        return filteredMaterials.contains(material);
+    }
+
+    public void addFilterMaterial(Material material) {
+        filteredMaterials.add(material);
+    }
+
+    public void removeFilterMaterial(Material material) {
+        filteredMaterials.remove(material);
     }
 }
