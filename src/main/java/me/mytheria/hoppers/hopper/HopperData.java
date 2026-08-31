@@ -89,5 +89,15 @@ public class HopperData {
 
     public void setSelectedFilterItem(Material selectedFilterItem) {
         this.selectedFilterItem = selectedFilterItem;
+        if (selectedFilterItem != null) {
+            // Add to filtered materials and enable filter
+            filteredMaterials.clear();
+            filteredMaterials.add(selectedFilterItem);
+            this.filterEnabled = true;
+        } else {
+            // Clear filter when deselecting
+            filteredMaterials.clear();
+            this.filterEnabled = false;
+        }
     }
 }
