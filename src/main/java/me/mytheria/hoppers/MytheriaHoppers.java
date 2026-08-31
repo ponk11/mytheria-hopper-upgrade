@@ -7,6 +7,7 @@ import me.mytheria.hoppers.economy.EconomyManager;
 import me.mytheria.hoppers.economy.VaultEconomyProvider;
 import me.mytheria.hoppers.gui.HopperGUI;
 import me.mytheria.hoppers.gui.UpgradeManager;
+import me.mytheria.hoppers.hopper.HopperTask;
 import me.mytheria.hoppers.listeners.GUIListener;
 import me.mytheria.hoppers.listeners.HopperBlockListener;
 import me.mytheria.hoppers.listeners.HopperInteractListener;
@@ -41,6 +42,9 @@ public class MytheriaHoppers extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
         getServer().getPluginManager().registerEvents(new HopperInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new HopperBlockListener(this), this);
+
+        // Schedule the hopper task to run every tick
+        new HopperTask(this).runTaskTimer(this, 0L, 1L);
 
         getLogger().info("MytheriaHoppers enabled successfully!");
     }

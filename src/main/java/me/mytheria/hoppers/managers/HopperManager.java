@@ -1,16 +1,17 @@
 package me.mytheria.hoppers.managers;
 
-import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.hopper.HopperData;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import me.mytheria.hoppers.MytheriaHoppers;
+import me.mytheria.hoppers.hopper.HopperData;
 
 public class HopperManager {
 
@@ -54,9 +55,15 @@ public class HopperManager {
             Location loc = entry.getKey();
             if (loc == null || loc.getWorld() == null) continue;
             String path = "hoppers." + loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
-            dataConfig.set(path + ".speed", entry.getValue().getSpeedLevel());
-            dataConfig.set(path + ".range", entry.getValue().getRangeLevel());
-            dataConfig.set(path + ".filterEnabled", entry.getValue().isFilterEnabled());
+            HopperData data = entry.getValue();
+            dataConfig.set(path + ".speed", data.getSpeedLevel());
+            dataConfig.set(path + ".range", data.getRangeLevel());
+            dataConfig.set(path + ".filterEnabled", data.isFilterEnabled());
+            dataConfig.set(path + ".filterUnlocked", data.isFilterUnlocked());
+            dataConfig.set(path + ".unlockedFilterSlots", data.getUnlockedFilterSlots());
+            if (data.getSelectedFilterItem() != null) {
+                dataConfig.set(path + ".selectedFilterItem", data.getSelectedFilterItem().toString());
+            }
         }
 
         try {
@@ -88,9 +95,21 @@ public class HopperManager {
 
             Location loc = new Location(Bukkit.getWorld(worldName), x, y, z);
             HopperData data = new HopperData();
-            data.setSpeedLevel(dataConfig.getInt("hoppers." + key + ".speed", 1));
-            data.setRangeLevel(dataConfig.getInt("hoppers." + key + ".range", 1));
+            data.setSpeedLevel(dataConfig.getInt("hoppers." + key + ".speed", 0));
+            data.setRangeLevel(dataConfig.getInt("hoppers." + key + ".range", 0));
             data.setFilterEnabled(dataConfig.getBoolean("hoppers." + key + ".filterEnabled", false));
+            data.setFilterUnlocked(dataConfig.getBoolean("hoppers." + key + ".filterUnlocked", false));
+            data.setUnlockedFilterSlots(dataConfig.getInt("hoppers." + key + ".unlockedFilterSlots", 0));
+            
+            String selectedItem = dataConfig.getString("hoppers." + key + ".selectedFilterItem");
+            if (selectedItem != null && !selectedItem.isEmpty()) {
+                try {
+                    org.bukkit.Material material = org.bukkit.Material.valueOf(selectedItem);
+                    data.setSelectedFilterItem(material);
+                } catch (IllegalArgumentException e) {
+                    // Invalid material, skip
+                }
+            }
 
             hopperDataMap.put(loc, data);
         }
