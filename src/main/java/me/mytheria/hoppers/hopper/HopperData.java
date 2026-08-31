@@ -1,8 +1,9 @@
 package me.mytheria.hoppers.hopper;
 
-import org.bukkit.Material;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.bukkit.Material;
 
 public class HopperData {
 
@@ -10,6 +11,9 @@ public class HopperData {
     private int rangeLevel = 0;
     private int lastTransferTick = 0;
     private boolean filterEnabled = false;
+    private boolean filterUnlocked = false;
+    private int unlockedFilterSlots = 0;
+    private Material selectedFilterItem = null;
     private final Set<Material> filteredMaterials = new HashSet<>();
 
     public int getSpeedLevel() {
@@ -61,5 +65,29 @@ public class HopperData {
 
     public void removeFilterMaterial(Material material) {
         filteredMaterials.remove(material);
+    }
+
+    public boolean isFilterUnlocked() {
+        return filterUnlocked;
+    }
+
+    public void setFilterUnlocked(boolean filterUnlocked) {
+        this.filterUnlocked = filterUnlocked;
+    }
+
+    public int getUnlockedFilterSlots() {
+        return unlockedFilterSlots;
+    }
+
+    public void setUnlockedFilterSlots(int unlockedFilterSlots) {
+        this.unlockedFilterSlots = unlockedFilterSlots;
+    }
+
+    public Material getSelectedFilterItem() {
+        return selectedFilterItem;
+    }
+
+    public void setSelectedFilterItem(Material selectedFilterItem) {
+        this.selectedFilterItem = selectedFilterItem;
     }
 }

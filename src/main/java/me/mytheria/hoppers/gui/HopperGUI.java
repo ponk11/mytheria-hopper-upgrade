@@ -1,7 +1,11 @@
 package me.mytheria.hoppers.gui;
 
-import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.hopper.HopperData;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -11,11 +15,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import me.mytheria.hoppers.MytheriaHoppers;
+import me.mytheria.hoppers.hopper.HopperData;
 
 public class HopperGUI {
 
@@ -58,7 +59,7 @@ public class HopperGUI {
         );
         gui.setItem(13, rangeItem);
 
-        String filterStatus = data.isFilterEnabled() ? ChatColor.GREEN + "Enabled" : ChatColor.RED + "Disabled";
+        String filterStatus = data.isFilterUnlocked() ? ChatColor.GREEN + "Unlocked" : ChatColor.RED + "Locked";
         ItemStack filterItem = createGuiItem(
                 Material.HOPPER,
                 ChatColor.GOLD + "Item Filter Settings",
@@ -73,30 +74,66 @@ public class HopperGUI {
     public void openFilterGUI(Player player, Location location) {
         openHopperLocations.put(player.getUniqueId(), location);
 
-        Inventory gui = Bukkit.createInventory(null, 27, ChatColor.DARK_GRAY + "Item Filter Settings");
+        Inventory gui = Bukkit.createInventory(null, 27, ChatColor.DARK_GRAY + "Item Filter Selection");
         HopperData data = plugin.getHopperManager().getData(location);
 
-        int slot = 0;
-        for (Material material : data.getFilteredMaterials()) {
-            if (slot >= 18) break;
-            ItemStack item = createGuiItem(
-                    material,
-                    ChatColor.YELLOW + material.name(),
-                    ChatColor.RED + "Click to remove from filter"
+        if (!data.isFilterUnlocked()) {
+            // Show unlock button
+            double unlockCost = plugin.getConfig().getDouble("filter-unlock-cost", 5000000.0);
+            ItemStack unlockItem = createGuiItem(
+                    Material.DIAMOND_BLOCK,
+                    ChatColor.GOLD + "Unlock Item Filter",
+                    ChatColor.GRAY + "Cost: $" + unlockCost,
+                    ChatColor.YELLOW + "Click to unlock!"
             );
-            gui.setItem(slot++, item);
+            gui.setItem(13, unlockItem);
+        } else {
+            // Show selected item (if any) in center
+            if (data.getSelectedFilterItem() != null) {
+                ItemStack selectedItem = createGuiItem(
+                        data.getSelectedFilterItem(),
+                        ChatColor.GREEN + data.getSelectedFilterItem().name(),
+                        ChatColor.YELLOW + "Click to deselect"
+                );
+                gui.setItem(13, selectedItem);
+            } else {
+                ItemStack emptySlot = createGuiItem(
+                        Material.BARRIER,
+                        ChatColor.GRAY + "No Item Selected",
+                        ChatColor.YELLOW + "Place an item below to select it"
+                );
+                gui.setItem(13, emptySlot);
+            }
+
+            // Show available selection slots (0-17)
+            int availableSlots = data.getUnlockedFilterSlots();
+            for (int i = 0; i < availableSlots && i < 18; i++) {
+                if (i != 13) {
+                    ItemStack slot = createGuiItem(
+                            Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                            ChatColor.GRAY + "Empty Slot",
+                            ChatColor.YELLOW + "Place an item here to select it"
+                    );
+                    gui.setItem(i, slot);
+                }
+            }
+
+            // Show unlock slot buttons (18-25)
+            if (availableSlots < 27) {
+                double slotUnlockCost = plugin.getConfig().getDouble("filter-slot-unlock-cost", 250000.0);
+                int slotsToUnlock = Math.min(8, 27 - availableSlots);
+                
+                for (int i = 0; i < slotsToUnlock; i++) {
+                    ItemStack unlockSlot = createGuiItem(
+                            Material.GOLD_BLOCK,
+                            ChatColor.GOLD + "Unlock Slot " + (availableSlots + i + 1),
+                            ChatColor.GRAY + "Cost: $" + slotUnlockCost,
+                            ChatColor.YELLOW + "Click to unlock!"
+                    );
+                    gui.setItem(18 + i, unlockSlot);
+                }
+            }
         }
-
-        double unlockCost = plugin.getConfig().getDouble("filter-unlock-cost", 1000.0);
-        String statusText = data.isFilterEnabled() ? ChatColor.GREEN + "Filter: ENABLED" : ChatColor.RED + "Filter: DISABLED";
-        String toggleLore = data.isFilterEnabled() ? ChatColor.YELLOW + "Click to disable filter" : ChatColor.YELLOW + "Click to unlock ($" + unlockCost + ")";
-
-        ItemStack toggleItem = createGuiItem(
-                data.isFilterEnabled() ? Material.LIME_DYE : Material.GRAY_DYE,
-                statusText,
-                toggleLore
-        );
-        gui.setItem(26, toggleItem);
 
         player.openInventory(gui);
     }

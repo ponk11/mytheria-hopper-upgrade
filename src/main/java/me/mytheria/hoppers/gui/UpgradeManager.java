@@ -1,9 +1,10 @@
 package me.mytheria.hoppers.gui;
 
+import org.bukkit.entity.Player;
+
 import me.mytheria.hoppers.MytheriaHoppers;
 import me.mytheria.hoppers.economy.EconomyProvider;
 import me.mytheria.hoppers.hopper.HopperData;
-import org.bukkit.entity.Player;
 
 public class UpgradeManager {
 
@@ -114,6 +115,59 @@ public class UpgradeManager {
 
         data.setRangeLevel(nextLevel);
 
+        return true;
+    }
+
+    public boolean unlockFilter(Player player, HopperData data) {
+        if (data.isFilterUnlocked()) {
+            return false;
+        }
+
+        double cost = plugin.getConfig().getDouble("filter-unlock-cost", 5000000.0);
+        EconomyProvider economy = plugin.getEconomyManager().getProvider();
+
+        if (economy == null) {
+            return false;
+        }
+
+        if (!economy.has(player, cost)) {
+            return false;
+        }
+
+        if (!economy.withdraw(player, cost)) {
+            return false;
+        }
+
+        data.setFilterUnlocked(true);
+        data.setUnlockedFilterSlots(1);
+        return true;
+    }
+
+    public boolean unlockFilterSlot(Player player, HopperData data) {
+        if (!data.isFilterUnlocked()) {
+            return false;
+        }
+
+        if (data.getUnlockedFilterSlots() >= 27) {
+            return false;
+        }
+
+        double cost = plugin.getConfig().getDouble("filter-slot-unlock-cost", 250000.0);
+        EconomyProvider economy = plugin.getEconomyManager().getProvider();
+
+        if (economy == null) {
+            return false;
+        }
+
+        if (!economy.has(player, cost)) {
+            return false;
+        }
+
+        if (!economy.withdraw(player, cost)) {
+            return false;
+        }
+
+        data.setUnlockedFilterSlots(data.getUnlockedFilterSlots() + 1);
         return true;
     }
 }

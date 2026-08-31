@@ -1,13 +1,16 @@
 package me.mytheria.hoppers.listeners;
 
-import me.mytheria.hoppers.MytheriaHoppers;
-import me.mytheria.hoppers.gui.HopperGUI;
-import me.mytheria.hoppers.hopper.HopperData;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+
+import me.mytheria.hoppers.MytheriaHoppers;
+import me.mytheria.hoppers.gui.HopperGUI;
+import me.mytheria.hoppers.hopper.HopperData;
 
 public class GUIListener implements Listener {
 
@@ -66,14 +69,41 @@ public class GUIListener implements Listener {
                 plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
             }
         }
-        // Handle Filter GUI
-        else if (title.contains("Item Filter Settings")) {
-            if (slot == 26) {
-                // Toggle filter
-                data.setFilterEnabled(!data.isFilterEnabled());
+        // Handle Filter Selection GUI
+        else if (title.contains("Item Filter Selection")) {
+            // Slot 13 is the center display slot
+            if (slot == 13) {
+                if (!data.isFilterUnlocked()) {
+                    // Unlock filter
+                    if (plugin.getUpgradeManager().unlockFilter(player, data)) {
+                        player.sendMessage("§aFilter unlocked! You can now select 1 item to filter.");
+                    } else {
+                        player.sendMessage("§cFailed to unlock filter. You need $5,000,000.");
+                    }
+                } else if (data.getSelectedFilterItem() != null) {
+                    // Deselect item
+                    data.setSelectedFilterItem(null);
+                    player.sendMessage("§aItem deselected!");
+                }
                 plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
-            } else if (slot < 18) {
-                // Remove item from filter
+            }
+            // Slots 0-17 are for selecting items (if filter is unlocked)
+            else if (data.isFilterUnlocked() && slot >= 0 && slot < 18 && slot != 13) {
+                ItemStack cursor = event.getCursor();
+                if (cursor != null && cursor.getType() != Material.AIR) {
+                    // Player is placing an item
+                    data.setSelectedFilterItem(cursor.getType());
+                    player.sendMessage("§aSelected item: " + cursor.getType().name());
+                    plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
+                }
+            }
+            // Slots 18-25 are for unlocking additional slots
+            else if (data.isFilterUnlocked() && slot >= 18 && slot <= 25 && data.getUnlockedFilterSlots() < 27) {
+                if (plugin.getUpgradeManager().unlockFilterSlot(player, data)) {
+                    player.sendMessage("§aFilter slot unlocked! You now have " + data.getUnlockedFilterSlots() + " slots.");
+                } else {
+                    player.sendMessage("§cFailed to unlock slot. You need $250,000 or slots are maxed out.");
+                }
                 plugin.getHopperGUI().openFilterGUI(player, hopperLocation);
             }
         }
