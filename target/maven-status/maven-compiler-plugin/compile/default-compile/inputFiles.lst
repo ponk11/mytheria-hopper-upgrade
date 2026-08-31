@@ -8,6 +8,8 @@
 /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/gui/HopperHolder.java
 /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/gui/UpgradeManager.java
 /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/hopper/HopperData.java
+/workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/hopper/HopperItem.java
+/workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/hopper/HopperKeys.java
 /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/hopper/HopperManager.java
 /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/hopper/HopperTask.java
 /workspaces/mytheria-hopper-upgrade/src/main/java/me/mytheria/hoppers/listeners/GUIListener.java
