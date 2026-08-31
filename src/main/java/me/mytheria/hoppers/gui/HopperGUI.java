@@ -29,6 +29,7 @@ public class HopperGUI {
         this.location = location;
     }
 
+    @SuppressWarnings("deprecation")
     public void open(Player player) {
 
         HopperHolder holder =
@@ -261,7 +262,7 @@ public class HopperGUI {
                 glass.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(" ");
+            setDisplayNameSuppressed(meta, " ");
             glass.setItemMeta(meta);
         }
 
@@ -274,6 +275,12 @@ public class HopperGUI {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    private void setDisplayNameSuppressed(ItemMeta meta, String name) {
+        meta.setDisplayName(name);
+    }
+
+    @SuppressWarnings("deprecation")
     private ItemStack createItem(
             Material material,
             String name,
@@ -321,6 +328,7 @@ public class HopperGUI {
                 .format(amount);
     }
 
+    @SuppressWarnings("deprecation")
     private String color(
             String text
     ) {

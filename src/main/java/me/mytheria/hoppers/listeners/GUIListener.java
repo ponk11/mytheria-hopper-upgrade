@@ -170,7 +170,8 @@ public class GUIListener implements Listener {
                                                     "messages.upgraded",
                                                     "&aUpgrade purchased!"
                                             )
-                            );
+                            )
+                    );
 
                     player.closeInventory();
 
@@ -183,7 +184,8 @@ public class GUIListener implements Listener {
                                                     "messages.not-enough-money",
                                                     "&cYou do not have enough money."
                                             )
-                            );
+                            )
+                    );
                 }
             }
 
@@ -192,6 +194,7 @@ public class GUIListener implements Listener {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private String color(String text) {
 
         return ChatColor.translateAlternateColorCodes(

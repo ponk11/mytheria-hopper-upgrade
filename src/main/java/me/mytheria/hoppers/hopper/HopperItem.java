@@ -14,6 +14,7 @@ public final class HopperItem {
     private HopperItem() {
     }
 
+    @SuppressWarnings("deprecation")
     public static ItemStack create(
             int speedLevel,
             int rangeLevel
@@ -80,6 +81,7 @@ public final class HopperItem {
         return item;
     }
 
+    @SuppressWarnings("deprecation")
     private static String color(String text) {
 
         return ChatColor.translateAlternateColorCodes(

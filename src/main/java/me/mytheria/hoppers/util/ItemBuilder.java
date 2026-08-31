@@ -19,6 +19,7 @@ public class ItemBuilder {
     }
 
 
+    @SuppressWarnings("deprecation")
     public ItemBuilder name(String name) {
 
         ItemMeta meta = item.getItemMeta();
@@ -35,6 +36,7 @@ public class ItemBuilder {
 
 
 
+    @SuppressWarnings("deprecation")
     public ItemBuilder lore(String... lore) {
 
         ItemMeta meta = item.getItemMeta();

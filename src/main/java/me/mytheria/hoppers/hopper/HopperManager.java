@@ -8,13 +8,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HopperManager {
 
-    private final MytheriaHoppers plugin;
-
     private final Map<Location, HopperData> hoppers =
             new ConcurrentHashMap<>();
 
     public HopperManager(MytheriaHoppers plugin) {
-        this.plugin = plugin;
     }
 
     public Map<Location, HopperData> getHoppers() {

@@ -90,6 +90,7 @@ public class HopperCommand implements CommandExecutor {
 
 
 
+    @SuppressWarnings("deprecation")
     private String color(String text) {
 
         return ChatColor.translateAlternateColorCodes(

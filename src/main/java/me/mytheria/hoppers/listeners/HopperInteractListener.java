@@ -48,8 +48,7 @@ public class HopperInteractListener implements Listener {
         )) {
 
             player.sendMessage(
-                    ChatColor.translateAlternateColorCodes(
-                            '&',
+                    color(
                             plugin.getConfig()
                                     .getString(
                                             "messages.no-permission",
@@ -66,5 +65,14 @@ public class HopperInteractListener implements Listener {
                 event.getClickedBlock()
                         .getLocation()
         ).open(player);
+    }
+
+    @SuppressWarnings("deprecation")
+    private String color(String text) {
+
+        return ChatColor.translateAlternateColorCodes(
+                '&',
+                text
+        );
     }
 }
