@@ -1,5 +1,6 @@
 package me.mytheria.hoppers.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -19,7 +20,7 @@ public class HopperBreakListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent event) {
 
         Block block = event.getBlock();
@@ -36,29 +37,31 @@ public class HopperBreakListener implements Listener {
             return;
         }
 
-        int speedLevel =
-                data.getSpeedLevel();
+        int speedLevel = data.getSpeedLevel();
+        int rangeLevel = data.getRangeLevel();
 
-        int rangeLevel =
-                data.getRangeLevel();
-
-        plugin.getHopperManager()
-                .remove(block.getLocation());
-
+        plugin.getHopperManager().remove(block.getLocation());
         plugin.getHopperManager().saveData();
+
+        event.setDropItems(false);
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (block.getType() == Material.HOPPER) {
+                block.setType(Material.AIR);
+            }
+        });
 
         if (speedLevel <= 0 && rangeLevel <= 0) {
             return;
         }
 
-        event.setDropItems(false);
-
-        block.getWorld().dropItemNaturally(
-                block.getLocation(),
-                HopperItem.create(
-                        speedLevel,
-                        rangeLevel
-                )
-        );
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (block.getType() == Material.AIR) {
+                block.getWorld().dropItemNaturally(
+                        block.getLocation(),
+                        HopperItem.create(speedLevel, rangeLevel)
+                );
+            }
+        });
     }
 }

@@ -49,19 +49,19 @@ public class HopperInteractListener implements Listener {
             return;
         }
 
-        // Allow normal block breaking without blocking the vanilla break flow.
-        if (event.getAction() == Action.LEFT_CLICK_BLOCK && !player.isSneaking()) {
+        // Normal block breaking must not be cancelled.
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
+            if (!player.isSneaking()) {
+                return;
+            }
+            event.setCancelled(true);
+            plugin.getHopperGUI().openGUI(player, block.getLocation());
             return;
         }
 
-        event.setCancelled(true);
-
-        // Shift + Left-Click = Open Upgrade GUI
-        if (event.getAction() == Action.LEFT_CLICK_BLOCK && player.isSneaking()) {
-            plugin.getHopperGUI().openGUI(player, block.getLocation());
-        }
-        // Right-Click = Open Hopper Inventory
-        else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        // Right-click opens the hopper inventory.
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            event.setCancelled(true);
             player.openInventory(((org.bukkit.block.Hopper) block.getState()).getInventory());
         }
     }
