@@ -49,6 +49,11 @@ public class HopperInteractListener implements Listener {
             return;
         }
 
+        // Allow normal block breaking without blocking the vanilla break flow.
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK && !player.isSneaking()) {
+            return;
+        }
+
         event.setCancelled(true);
 
         // Shift + Left-Click = Open Upgrade GUI
